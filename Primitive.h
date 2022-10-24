@@ -18,7 +18,7 @@ private:
     std::unordered_map<std::string, std::vector<std::string>> opt_parents{};
 protected:
     using StreamRef = model::IDatasetStream &;
-    // a set of all options which can be set from the outside when the primitive is in some state
+    // The set of all options which can be set from the outside when the primitive is in some state.
     std::unordered_set<std::string> available_options_{};
 
 public:
@@ -48,16 +48,19 @@ public:
     // Get JSON description of the option
     /* virtual std::string GetJson(string option_name) */
 
+    // Get options that need to be set
     [[nodiscard]] virtual std::unordered_set<std::string> GetNeededOptions() const = 0;
 
     virtual bool UnsetOption(std::string const& option_name) noexcept = 0;
 
 protected:
+    // Called by some options to add more options.
     void AddAvailableOption(std::string const& parent_name, std::string const& option_name) {
         opt_parents[parent_name].emplace_back(option_name);
         available_options_.insert(option_name);
     }
 
+    // Remove options that were added by an option that was unset.
     void ExcludeOptions(std::string const& parent_option) {
         auto it = opt_parents.find(parent_option);
         if (it == opt_parents.end()) return;
