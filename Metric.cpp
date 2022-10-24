@@ -4,6 +4,10 @@
 #include "Metric.h"
 #include "Util.h"
 
+namespace {
+namespace posr = program_option_strings;
+}
+
 namespace algos {
 
 MetricVerifier::MetricVerifier() : Primitive() {
@@ -11,7 +15,6 @@ MetricVerifier::MetricVerifier() : Primitive() {
 }
 
 void MetricVerifier::Fit(StreamRef input_generator) {
-    namespace posr = program_option_strings;
     if (!is_null_equal_null_.is_set_) throw std::exception();
     // Some transformations
     processing_completed_ = true;
@@ -55,6 +58,61 @@ bool MetricVerifier::UnsetOption(std::string const& option_name) noexcept {
         return true;
     }
     assert(0);
+}
+
+void MetricVerifier::OptLhsIndices::Set(MetricVerifier& primitive, std::vector<unsigned int> value) {
+    if (value.empty()) throw std::exception();
+    // OOB check should be here
+    std::sort(value.begin(), value.end());
+    value.erase(std::unique(value.begin(), value.end()), value.end());
+    OptLhsType::Set(primitive, std::move(value));
+}
+
+void MetricVerifier::OptMetric::Set(MetricVerifier& primitive, std::string value) {
+    if (!(value == "euclidean" || value == "cosine" || value == "levenshtein")) throw std::exception();
+    OptMetricType::Set(primitive, value);
+    if (value == "cosine") primitive.AddAvailableOption(*name, posr::kQGramLength);
+    if (!(value == "euclidean" && primitive.rhs_indices_.value_.size() == 1))
+        primitive.AddAvailableOption(*name, posr::kMetricAlgorithm);
+}
+
+void MetricVerifier::OptRhsIndices::Set(MetricVerifier& primitive, std::vector<unsigned int> value) {
+    if (value.empty()) throw std::exception();
+    if ((primitive.metric_.value_ == "levenshtein" || primitive.metric_.value_ == "cosine")
+        && value.size() != 1) {
+        throw std::exception();
+    }
+    // OOB check should be here
+    std::sort(value.begin(), value.end());
+    value.erase(std::unique(value.begin(), value.end()), value.end());
+    OptRhsType::Set(primitive, value);
+    if (!(primitive.metric_.value_ == "euclidean" && value.size() == 1))
+        primitive.AddAvailableOption(*name, posr::kMetric);
+}
+
+void MetricVerifier::OptMetricAlgo::Set(MetricVerifier & primitive, std::string value) {
+    if (value == "brute") {
+        OptMetricAlgoType::Set(primitive, std::move(value));
+    }
+    else if (value == "approx") {
+        if (primitive.metric_.value_ == "euclidean" && primitive.rhs_indices_.value_.size() == 1)
+            throw std::exception();
+        OptMetricAlgoType::Set(primitive, std::move(value));
+    }
+    else if (value == "calipers") {
+        if (!(primitive.metric_.value_ == "euclidean" && primitive.rhs_indices_.value_.size() == 2))
+            throw std::exception();
+        OptMetricAlgoType::Set(primitive, std::move(value));
+    }
+    else {
+        throw std::exception();
+    }
+}
+
+void MetricVerifier::OptQ::Set(MetricVerifier& primitive, unsigned int value) {
+    if (!(primitive.metric_.is_set_ && primitive.metric_.value_ == "cosine"))
+        throw std::exception();
+    OptQType::Set(primitive, value);
 }
 
 }

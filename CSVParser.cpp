@@ -72,15 +72,15 @@ void CSVParser::GetNextIfHas() {
 }
 
 std::string CSVParser::GetUnparsedLine(const unsigned long long line_index) {
-
+    return "";
 }
 
 std::vector<std::string> CSVParser::ParseString(const std::string& s) const {
-
+    return {};
 }
 
 std::vector<std::string> CSVParser::ParseLine(const unsigned long long line_index) {
-
+    return {};
 }
 
 std::vector<std::string> CSVParser::GetNextRow() {
