@@ -1,9 +1,7 @@
 #include "CSVParser.h"
 
 #include <filesystem>
-#include <fstream>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <boost/tokenizer.hpp>
@@ -23,28 +21,7 @@ CSVParser::CSVParser(const std::filesystem::path& path, char separator, bool has
           number_of_columns_(),
           column_names_(),
           relation_name_(path.filename().string()) {
-    //Wrong path
-    if (!source_) {
-        throw std::runtime_error("Error: couldn't find file " + path.string());
-    }
-    if (separator == '\0') {
-        throw std::invalid_argument("Invalid separator");
-    }
-    if (has_header) {
-        GetNext();
-    } else {
-        PeekNext();
-    }
-
-    std::vector<std::string> next_parsed = GetNextRow();
-    number_of_columns_ = next_parsed.size();
-    column_names_ = std::move(next_parsed);
-
-    if (!has_header) {
-        for (int i = 0; i < number_of_columns_; i++) {
-            column_names_[i] = std::to_string(i);
-        }
-    }
+    // whatever
 }
 
 void CSVParser::GetNext() {

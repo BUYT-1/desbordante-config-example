@@ -14,7 +14,7 @@ namespace algos {
 class Primitive {
 private:
     // For automatically making options unavailable (so they can't be set)
-    // [see: Primitive::ExcludeOptions]
+    // [see: Primitive::ExcludeOptions].
     std::unordered_map<std::string, std::vector<std::string>> opt_parents{};
 protected:
     using StreamRef = model::IDatasetStream &;
@@ -31,7 +31,7 @@ public:
 
     virtual ~Primitive() = default;
 
-    // transform raw data into a format suitable for a particular primitive
+    // Transform raw data into a format suitable for a particular primitive.
     virtual void Fit(StreamRef input_generator) = 0;
 
     virtual unsigned long long Execute() = 0;
@@ -45,8 +45,11 @@ public:
     // Set the value of an option from a Python object.
     /* virtual bool SetOption(string option_name, py::object obj) = 0 */
 
-    // Get JSON description of the option
-    /* virtual std::string GetJson(string option_name) */
+    // Get JSON description of the option.
+    /* virtual std::string GetJson(string option_name) = 0 */
+
+    // Return a po::options_description with all options for the primitive.
+    /* virtual po::options_description GetOptionsDescription() = 0 */
 
     // Get options that need to be set
     [[nodiscard]] virtual std::unordered_set<std::string> GetNeededOptions() const = 0;

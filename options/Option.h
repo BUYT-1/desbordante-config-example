@@ -2,7 +2,7 @@
 
 namespace algos::config {
 
-template <typename T, typename PT, const std::string * const OptName, const std::string * const description>
+template <typename T, typename PT, const std::string * const OptName, const std::string * const Description>
 struct Option {
 public:
     using Type = T;
@@ -25,16 +25,15 @@ public:
         Set(primitive, std::any_cast<T>(value));
     }
 
-    /*void SetPy(PT& primitive, py::object value) {  // specialize for vector
+    /*virtual void SetPy(PT& primitive, py::object value) {
         Set(primitive, py::extract<T>(value))
     }*/
 
-    /*void AddToProgramOptions(po::options_description po) {
-        // check that option with this name is not there, then
+    /*virtual void AddToProgramOptions(po::options_description po) {
         po.add_options(*name, po::value<T>(), *description);
     }*/
 
-    /*std::string GetJson() {
+    /*virtual std::string GetJson() {
         ...
     }*/
 
@@ -43,13 +42,28 @@ public:
     bool is_set_ = false;
 };
 
-template <typename T, typename PT, const std::string * const name, const std::string * const description>
-struct DefOption : public Option<T, PT, name, description> {
+template <typename T, typename PT, const std::string * const OptName, const std::string * const Description>
+struct VectorOption : Option<std::vector<T>, PT, OptName, Description> { // python lists require special treatment
+    /*void SetPy(PT& primitive, py::list value) override {
+        std::vector<T> elements;
+        for (const auto& element : value) { // not exactly this loop, but just the idea
+            elements.emplace_back(element);
+        }
+        Set(primitive, elements);
+    }*/
+};
+
+template <typename T, typename PT, const std::string * const OptName, const std::string * const Description>
+struct DefOption : public Option<T, PT, OptName, Description> {
     explicit DefOption(T default_value) : default_value_(default_value) {}
 
     void SetDefault(PT& primitive) override {
-        Option<T, PT, name, description>::Set(primitive, default_value_);
+        Option<T, PT, OptName, Description>::Set(primitive, default_value_);
     }
+
+    /*void AddToProgramOptions(po::options_description po) override {
+        po.add_options(*name, po::value<T>()->default_value(default_value_), *description);
+    }*/
 
 private:
     T default_value_;

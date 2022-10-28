@@ -6,10 +6,8 @@ const std::string kHelp = "help";
 const std::string kTask = "task";
 const std::string kAlgorithm = "algorithm";
 const std::string kData = "data";
-#define SEPARATOR "separator"
-const std::string kSeparatorConfig = SEPARATOR;
-const std::string kSeparatorLibArg = SEPARATOR ",s";
-#undef SEPARATOR
+const std::string kSeparatorConfig = "separator";
+const std::string kSeparatorLibArg = kSeparatorConfig + ",s";
 const std::string kHasHeader = "has_header";
 const std::string kEqualNulls = "is_null_equal_null";
 const std::string kThreads = "threads";

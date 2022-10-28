@@ -5,10 +5,11 @@
 
 namespace algos::config::util {
 
+// Collects options that need to be set.
 void GetUnsetOptions(std::unordered_set<std::string> const& available_options,
                      std::unordered_set<std::string>& uns_opts) { }
 
-template<typename... Opts, typename Option>
+template <typename... Opts, typename Option>
 void GetUnsetOptions(std::unordered_set<std::string> const& available_options,
                      std::unordered_set<std::string>& uns_opts, Option& opt, Opts&... opts) {
     auto got = available_options.find(*Option::name);
@@ -18,7 +19,7 @@ void GetUnsetOptions(std::unordered_set<std::string> const& available_options,
     GetUnsetOptions(available_options, uns_opts, opts...);
 }
 
-template<typename... Opts>
+template <typename... Opts>
 std::unordered_set<std::string> GetUnsetOptions(std::unordered_set<std::string> const& available_options,
                                                 Opts&... opts) {
     std::unordered_set<std::string> uns_opts;
@@ -26,12 +27,13 @@ std::unordered_set<std::string> GetUnsetOptions(std::unordered_set<std::string> 
     return uns_opts;
 }
 
-template<typename PT>
+// Tries to set an option's default value.
+template <typename PT>
 bool SetOptDefault(PT& primitive, std::string const& opt_name) {
     return false;
 }
 
-template<typename PT, typename Option, typename... Opts>
+template <typename PT, typename Option, typename... Opts>
 bool SetOptDefault(PT& primitive, std::string const& opt_name, Option& opt, Opts&... opts) {
     if (*Option::name == opt_name) {
         opt.SetDefault(primitive);
@@ -40,12 +42,13 @@ bool SetOptDefault(PT& primitive, std::string const& opt_name, Option& opt, Opts
     return SetOptDefault(primitive, opt_name, opts...);
 }
 
-template<typename PT>
+// Set an option from std::any
+template <typename PT>
 bool SetOptAny(PT& primitive, std::string const& opt_name, std::any const& value) {
     return false;
 }
 
-template<typename PT, typename Option, typename... Opts>
+template <typename PT, typename Option, typename... Opts>
 bool SetOptAny(PT& primitive, std::string const& opt_name, std::any const& value, Option& opt, Opts&... opts) {
     if (*Option::name == opt_name) {
         opt.SetAny(primitive, value);
@@ -54,7 +57,8 @@ bool SetOptAny(PT& primitive, std::string const& opt_name, std::any const& value
     return SetOptAny(primitive, opt_name, value, opts...);
 }
 
-template<typename PT>
+// Unsets option by name.
+template <typename PT>
 bool UnsetOpt(PT& primitive, std::string const& opt_name) {
     return false;
 }
@@ -68,9 +72,10 @@ bool UnsetOpt(PT& primitive, std::string const& opt_name, Option& opt, Opts&... 
     return UnsetOpt(primitive, opt_name, opts...);
 }
 
+// Convenience function to set a primitive's fields using values in its option struct.
 void SetFieldsFromOpt() { }
 
-template<typename Option, typename FieldType, typename... Pairs>
+template <typename Option, typename FieldType, typename... Pairs>
 void SetFieldsFromOpt(FieldType& field, Option& option, Pairs&... pairs) {
     if (option.is_set_) {
         field = option.value_;

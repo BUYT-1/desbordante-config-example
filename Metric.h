@@ -28,13 +28,14 @@ namespace algos {
 class MetricVerifier : public Primitive {
     // Note: it may make sense to split everything related to configuration
     // into some other class. However, this would make everything more
-    // complicated, which is not needed for now.
+    // complicated, and there doesn't seem to be a practical use to justify
+    // the complexity.
 private:
-    using OptLhsType = config::Option<std::vector<unsigned int>, MetricVerifier, &program_option_strings::kLhsIndices,
+    using OptLhsType = config::VectorOption<unsigned int, MetricVerifier, &program_option_strings::kLhsIndices,
     &algos::config::descriptions::kDLhsIndices>;
     using OptMetricType = config::Option<std::string, MetricVerifier, &program_option_strings::kMetric,
     &algos::config::descriptions::kDMetric>;
-    using OptRhsType = config::Option<std::vector<unsigned int>, MetricVerifier, &program_option_strings::kRhsIndices,
+    using OptRhsType = config::VectorOption<unsigned int, MetricVerifier, &program_option_strings::kRhsIndices,
     &algos::config::descriptions::kDRhsIndices>;
     using OptMetricAlgoType = config::DefOption<std::string, MetricVerifier, &program_option_strings::kMetricAlgorithm,
     &algos::config::descriptions::kDMetricAlgorithm>;
@@ -64,8 +65,6 @@ private:
 
     struct OptQ : public OptQType {
         OptQ() : OptQType(2) {}
-
-        void Set(MetricVerifier& primitive, unsigned int value) override;
     };
 
     struct {

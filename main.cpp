@@ -28,6 +28,13 @@ void NeedToSet(algos::Primitive& primitive) {
 }*/
 
 int main() {
+    // Get a (task, primitive) pair from the user. Get the primitive.
+    // Remove the "task" and "primitive" options from var_map.
+    // Parse according to the primitive's program_options.
+    // Configure the primitive using FromVarMap.
+    // Execute the primitive.
+
+    // This is a dummy method to show that the configuration idea is sensible.
     std::unique_ptr<algos::Primitive> primitive = std::make_unique<algos::MetricVerifier>();
 
     std::cout << "Before fitting:" << std::endl;
