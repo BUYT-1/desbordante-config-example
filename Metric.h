@@ -8,6 +8,8 @@
 #include "Option.h"
 #include "Descriptions.h"
 #include "OptParameter.h"
+#include "OptNullEqualsNull.h"
+#include "OptDistToNullInfinity.h"
 
 enum class Metric {
     euclidean = 0,
@@ -25,7 +27,8 @@ namespace algos {
 
 class MetricVerifier : public Primitive {
     // Note: it may make sense to split everything related to configuration
-    // into some other class.
+    // into some other class. However, this would make everything more
+    // complicated, which is not needed for now.
 private:
     using OptLhsType = config::Option<std::vector<unsigned int>, MetricVerifier, &program_option_strings::kLhsIndices,
     &algos::config::descriptions::kDLhsIndices>;
@@ -37,9 +40,11 @@ private:
     &algos::config::descriptions::kDMetricAlgorithm>;
     using OptQType = config::DefOption<unsigned int, MetricVerifier, &program_option_strings::kQGramLength,
     &algos::config::descriptions::kDQGramLength>;
+    using NullEqualsNullType = config::OptNullEqualsNull<MetricVerifier>;
+    using ParameterType = config::OptParameter<MetricVerifier>;
+    using DistToNullInfinityType = config::OptDistToNullInfinity<MetricVerifier>;
 
-    struct OptLhsIndices : public config::Option<std::vector<unsigned int>, MetricVerifier, &program_option_strings::kLhsIndices,
-            &algos::config::descriptions::kDLhsIndices> {
+    struct OptLhsIndices : public OptLhsType {
         void Set(MetricVerifier& primitive, std::vector<unsigned int> value) override;
     };
 
@@ -63,40 +68,37 @@ private:
         void Set(MetricVerifier& primitive, unsigned int value) override;
     };
 
-    config::DefOption<bool, MetricVerifier, &program_option_strings::kEqualNulls,
-    &algos::config::descriptions::kDEqualNulls> is_null_equal_null_{true};
-    config::OptParameter<MetricVerifier> parameter_;
-    config::DefOption<bool, MetricVerifier, &program_option_strings::kDistToNullIsInfinity,
-    &algos::config::descriptions::kDDistToNullIsInfinity> dist_to_null_infinity_{false};
-    OptLhsIndices lhs_indices_;
-    OptRhsIndices rhs_indices_;
-    OptMetric metric_;
-    OptMetricAlgo algo_;
-    OptQ q_;
+    struct {
+        NullEqualsNullType is_null_equal_null_;
+        ParameterType parameter_;
+        DistToNullInfinityType dist_to_null_infinity_;
+        OptLhsIndices lhs_indices_;
+        OptRhsIndices rhs_indices_;
+        OptMetric metric_;
+        OptMetricAlgo algo_;
+        OptQ q_;
+    } conf_metver_;
 
-    //bool metric_fd_holds_ = false;
-
-    // std::shared_ptr<model::ColumnLayoutTypedRelationData> typed_relation_;
-    // std::shared_ptr<ColumnLayoutRelationData> relation_; // temporarily parsing twice
-
-    //bool CompareNumericValues(util::PLI::Cluster const& cluster) const;
-    //bool CompareStringValues(util::PLI::Cluster const& cluster,
-    //                         DistanceFunction const& dist_func) const;
+    NullEqualsNullType::Type is_null_equal_null_;
+    ParameterType::Type parameter_;
+    DistToNullInfinityType::Type dist_to_null_infinity_;
+    OptLhsIndices::Type lhs_indices_;
+    OptRhsIndices::Type rhs_indices_;
+    OptMetric::Type metric_;
+    OptMetricAlgo::Type algo_;
+    OptQ::Type q_;
 
 public:
     MetricVerifier();
-
     void Fit(StreamRef input_generator) override;
-
     unsigned long long Execute() override;
-
     bool SetOption(std::string const& option_name, std::any const& value) override;
-
     bool SetOption(std::string const& option_name) override;
-
     [[nodiscard]] std::unordered_set<std::string> GetNeededOptions() const override;
-
     bool UnsetOption(std::string const& option_name) noexcept override;
+
+protected:
+    void SetConfFields() override;
 
 private:
     bool processing_completed_ = false;

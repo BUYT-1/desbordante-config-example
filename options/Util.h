@@ -68,4 +68,14 @@ bool UnsetOpt(PT& primitive, std::string const& opt_name, Option& opt, Opts&... 
     return UnsetOpt(primitive, opt_name, opts...);
 }
 
+void SetFieldsFromOpt() { }
+
+template<typename Option, typename FieldType, typename... Pairs>
+void SetFieldsFromOpt(FieldType& field, Option& option, Pairs&... pairs) {
+    if (option.is_set_) {
+        field = option.value_;
+    }
+    SetFieldsFromOpt(pairs...);
+}
+
 }

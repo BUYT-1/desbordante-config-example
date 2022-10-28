@@ -5,6 +5,8 @@ namespace algos::config {
 template <typename T, typename PT, const std::string * const OptName, const std::string * const description>
 struct Option {
 public:
+    using Type = T;
+
     virtual void SetDefault(PT& primitive) {
         throw std::exception();
     }

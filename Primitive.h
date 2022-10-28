@@ -54,6 +54,8 @@ public:
     virtual bool UnsetOption(std::string const& option_name) noexcept = 0;
 
 protected:
+    virtual void SetConfFields() = 0;
+
     // Called by some options to add more options.
     void AddAvailableOption(std::string const& parent_name, std::string const& option_name) {
         opt_parents[parent_name].emplace_back(option_name);
