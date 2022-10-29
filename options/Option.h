@@ -25,19 +25,35 @@ public:
         Set(primitive, std::any_cast<T>(value));
     }
 
+    [[nodiscard]] std::string GetName() const {
+        return *OptName;
+    }
+
+    [[nodiscard]] std::string GetDescription() const {
+        return *Description;
+    }
+
+    [[nodiscard]] bool IsSet() const {
+        return is_set_;
+    }
+
+    T const& GetValue() const {
+        return value_;
+    }
+
     /*virtual void SetPy(PT& primitive, py::object value) {
         Set(primitive, py::extract<T>(value))
     }*/
 
     /*virtual void AddToProgramOptions(po::options_description po) {
-        po.add_options(*name, po::value<T>(), *description);
+        po.add_options(*OptName, po::value<T>(), *Description);
     }*/
 
     /*virtual std::string GetJson() {
         ...
     }*/
 
-    static constexpr auto name = OptName;
+private:
     T value_;
     bool is_set_ = false;
 };
@@ -62,7 +78,7 @@ struct DefOption : public Option<T, PT, OptName, Description> {
     }
 
     /*void AddToProgramOptions(po::options_description po) override {
-        po.add_options(*name, po::value<T>()->default_value(default_value_), *description);
+        po.add_options(GetName(), po::value<T>()->default_value(default_value_), GetDescription());
     }*/
 
 private:

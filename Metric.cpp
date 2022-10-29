@@ -100,23 +100,23 @@ void MetricVerifier::OptRhsIndices::Set(MetricVerifier& primitive, std::vector<u
     std::sort(value.begin(), value.end());
     value.erase(std::unique(value.begin(), value.end()), value.end());
     OptRhsType::Set(primitive, value);
-    primitive.AddAvailableOption(*name, posr::kMetric);
+    primitive.AddAvailableOption(GetName(), posr::kMetric);
 }
 
 void MetricVerifier::OptMetric::Set(MetricVerifier& primitive, std::string value) {
     // We leverage the Primitive::available_options_ field in such a way as not to
     // have to check whether an option has been set inside these Set methods.
-    assert(primitive.conf_metver_.rhs_indices_.is_set_);
+    assert(primitive.conf_metver_.rhs_indices_.IsSet());
     if (value == "levenshtein") {
-        primitive.AddAvailableOption(*name, program_option_strings::kMetricAlgorithm);
+        primitive.AddAvailableOption(GetName(), program_option_strings::kMetricAlgorithm);
     }
     else if (value == "cosine") {
-        primitive.AddAvailableOption(*name, program_option_strings::kMetricAlgorithm);
-        primitive.AddAvailableOption(*name, program_option_strings::kQGramLength);
+        primitive.AddAvailableOption(GetName(), program_option_strings::kMetricAlgorithm);
+        primitive.AddAvailableOption(GetName(), program_option_strings::kQGramLength);
     }
     else if (value == "euclidean") {
-        if (primitive.conf_metver_.rhs_indices_.value_.size() != 1)
-            primitive.AddAvailableOption(*name, program_option_strings::kMetricAlgorithm);
+        if (primitive.conf_metver_.rhs_indices_.GetValue().size() != 1)
+            primitive.AddAvailableOption(GetName(), program_option_strings::kMetricAlgorithm);
     }
     else {
         throw std::exception();
@@ -125,20 +125,20 @@ void MetricVerifier::OptMetric::Set(MetricVerifier& primitive, std::string value
 }
 
 void MetricVerifier::OptMetricAlgo::Set(MetricVerifier & primitive, std::string value) {
-    assert(primitive.conf_metver_.metric_.is_set_);
-    assert(primitive.conf_metver_.rhs_indices_.is_set_);
+    assert(primitive.conf_metver_.metric_.IsSet());
+    assert(primitive.conf_metver_.rhs_indices_.IsSet());
     if (value == "brute") {
         OptMetricAlgoType::Set(primitive, std::move(value));
     }
     else if (value == "approx") {
-        if (primitive.conf_metver_.metric_.value_ == "euclidean"
-        && primitive.conf_metver_.rhs_indices_.value_.size() == 1)
+        if (primitive.conf_metver_.metric_.GetValue() == "euclidean"
+        && primitive.conf_metver_.rhs_indices_.GetValue().size() == 1)
             throw std::exception();
         OptMetricAlgoType::Set(primitive, std::move(value));
     }
     else if (value == "calipers") {
-        if (!(primitive.conf_metver_.metric_.value_ == "euclidean"
-        && primitive.conf_metver_.rhs_indices_.value_.size() == 2))
+        if (!(primitive.conf_metver_.metric_.GetValue() == "euclidean"
+        && primitive.conf_metver_.rhs_indices_.GetValue().size() == 2))
             throw std::exception();
         OptMetricAlgoType::Set(primitive, std::move(value));
     }

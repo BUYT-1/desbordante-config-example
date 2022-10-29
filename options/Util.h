@@ -12,9 +12,9 @@ void GetUnsetOptions(std::unordered_set<std::string> const& available_options,
 template <typename... Opts, typename Option>
 void GetUnsetOptions(std::unordered_set<std::string> const& available_options,
                      std::unordered_set<std::string>& uns_opts, Option& opt, Opts&... opts) {
-    auto got = available_options.find(*Option::name);
+    auto got = available_options.find(opt.GetName());
     if (got != available_options.end()) {
-        if (!opt.is_set_) uns_opts.insert(*Option::name);
+        if (!opt.IsSet()) uns_opts.insert(opt.GetName());
     }
     GetUnsetOptions(available_options, uns_opts, opts...);
 }
@@ -35,7 +35,7 @@ bool SetOptDefault(PT& primitive, std::string const& opt_name) {
 
 template <typename PT, typename Option, typename... Opts>
 bool SetOptDefault(PT& primitive, std::string const& opt_name, Option& opt, Opts&... opts) {
-    if (*Option::name == opt_name) {
+    if (opt.GetName() == opt_name) {
         opt.SetDefault(primitive);
         return true;
     }
@@ -50,7 +50,7 @@ bool SetOptAny(PT& primitive, std::string const& opt_name, std::any const& value
 
 template <typename PT, typename Option, typename... Opts>
 bool SetOptAny(PT& primitive, std::string const& opt_name, std::any const& value, Option& opt, Opts&... opts) {
-    if (*Option::name == opt_name) {
+    if (opt.GetName() == opt_name) {
         opt.SetAny(primitive, value);
         return true;
     }
@@ -65,7 +65,7 @@ bool UnsetOpt(PT& primitive, std::string const& opt_name) {
 
 template<typename PT, typename Option, typename... Opts>
 bool UnsetOpt(PT& primitive, std::string const& opt_name, Option& opt, Opts&... opts) {
-    if (*Option::name == opt_name) {
+    if (opt.GetName() == opt_name) {
         opt.Unset(primitive);
         return true;
     }
@@ -77,8 +77,8 @@ void SetFieldsFromOpt() { }
 
 template <typename Option, typename FieldType, typename... Pairs>
 void SetFieldsFromOpt(FieldType& field, Option& option, Pairs&... pairs) {
-    if (option.is_set_) {
-        field = option.value_;
+    if (option.IsSet()) {
+        field = option.GetValue();
     }
     SetFieldsFromOpt(pairs...);
 }
