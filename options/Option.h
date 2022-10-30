@@ -25,11 +25,11 @@ public:
         Set(primitive, std::any_cast<T>(value));
     }
 
-    [[nodiscard]] std::string GetName() const {
+    [[nodiscard]] std::string const& GetName() const {
         return *OptName;
     }
 
-    [[nodiscard]] std::string GetDescription() const {
+    [[nodiscard]] std::string const& GetDescription() const {
         return *Description;
     }
 
