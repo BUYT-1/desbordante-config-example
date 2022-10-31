@@ -5,6 +5,11 @@
 
 namespace algos::config::util {
 
+template <typename s> struct is_collection : std::false_type {};
+template <template <class> class TP, typename ElT> struct is_collection<TP<ElT>> : std::true_type {
+    using Type = ElT;
+};
+
 // Collects options that need to be set.
 void GetUnsetOptions(std::unordered_set<std::string> const& available_options,
                      std::unordered_set<std::string>& uns_opts) { }

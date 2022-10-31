@@ -31,15 +31,15 @@ class MetricVerifier : public Primitive {
     // complicated, and there doesn't seem to be a practical use to justify
     // the complexity.
 private:
-    using OptLhsType = config::VectorOption<unsigned int, MetricVerifier, &program_option_strings::kLhsIndices,
+    using OptLhsType = config::Option<std::vector<unsigned int>, MetricVerifier, &program_option_strings::kLhsIndices,
     &algos::config::descriptions::kDLhsIndices>;
     using OptMetricType = config::Option<std::string, MetricVerifier, &program_option_strings::kMetric,
     &algos::config::descriptions::kDMetric>;
-    using OptRhsType = config::VectorOption<unsigned int, MetricVerifier, &program_option_strings::kRhsIndices,
+    using OptRhsType = config::Option<std::vector<unsigned int>, MetricVerifier, &program_option_strings::kRhsIndices,
     &algos::config::descriptions::kDRhsIndices>;
-    using OptMetricAlgoType = config::DefOption<std::string, MetricVerifier, &program_option_strings::kMetricAlgorithm,
+    using OptMetricAlgoType = config::Option<std::string, MetricVerifier, &program_option_strings::kMetricAlgorithm,
     &algos::config::descriptions::kDMetricAlgorithm>;
-    using OptQType = config::DefOption<unsigned int, MetricVerifier, &program_option_strings::kQGramLength,
+    using OptQType = config::Option<unsigned int, MetricVerifier, &program_option_strings::kQGramLength,
     &algos::config::descriptions::kDQGramLength>;
     using NullEqualsNullType = config::OptNullEqualsNull<MetricVerifier>;
     using ParameterType = config::OptParameter<MetricVerifier>;

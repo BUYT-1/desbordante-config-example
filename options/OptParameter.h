@@ -7,9 +7,9 @@
 namespace algos::config {
 
 template <typename PT>
-struct OptParameter : DefOption<long double, PT, &program_option_strings::kParameter,
+struct OptParameter : Option<long double, PT, &program_option_strings::kParameter,
         &algos::config::descriptions::kDParameter> {
-    OptParameter() : DefOption<long double, PT, &program_option_strings::kParameter,
+    OptParameter() : Option<long double, PT, &program_option_strings::kParameter,
     &algos::config::descriptions::kDParameter>(0) {}
 
     void Set(PT& primitive, long double value) override {

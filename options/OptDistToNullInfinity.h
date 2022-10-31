@@ -7,9 +7,9 @@
 namespace algos::config {
 
 template <typename PT>
-struct OptDistToNullInfinity : DefOption<bool, PT, &program_option_strings::kDistToNullIsInfinity,
+struct OptDistToNullInfinity : Option<bool, PT, &program_option_strings::kDistToNullIsInfinity,
         &algos::config::descriptions::kDDistToNullIsInfinity> {
-    OptDistToNullInfinity() : DefOption<bool, PT, &program_option_strings::kDistToNullIsInfinity,
+    OptDistToNullInfinity() : Option<bool, PT, &program_option_strings::kDistToNullIsInfinity,
     &algos::config::descriptions::kDDistToNullIsInfinity>(false) {}
 };
 
