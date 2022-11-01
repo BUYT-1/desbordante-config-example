@@ -7,21 +7,7 @@
 #include "ProgramOptionStrings.h"
 #include "Option.h"
 #include "Descriptions.h"
-#include "OptParameter.h"
-#include "OptNullEqualsNull.h"
-#include "OptDistToNullInfinity.h"
-
-enum class Metric {
-    euclidean = 0,
-    levenshtein,
-    cosine
-};
-
-enum class MetricAlgo {
-    brute = 0,
-    approx,
-    calipers
-};
+#include "CommonOptions.h"
 
 namespace algos {
 
@@ -31,61 +17,28 @@ class MetricVerifier : public Primitive {
     // complicated, and there doesn't seem to be a practical use to justify
     // the complexity.
 private:
-    using OptLhsType = config::Option<std::vector<unsigned int>, MetricVerifier, &program_option_strings::kLhsIndices,
-    &algos::config::descriptions::kDLhsIndices>;
-    using OptMetricType = config::Option<std::string, MetricVerifier, &program_option_strings::kMetric,
-    &algos::config::descriptions::kDMetric>;
-    using OptRhsType = config::Option<std::vector<unsigned int>, MetricVerifier, &program_option_strings::kRhsIndices,
-    &algos::config::descriptions::kDRhsIndices>;
-    using OptMetricAlgoType = config::Option<std::string, MetricVerifier, &program_option_strings::kMetricAlgorithm,
-    &algos::config::descriptions::kDMetricAlgorithm>;
-    using OptQType = config::Option<unsigned int, MetricVerifier, &program_option_strings::kQGramLength,
-    &algos::config::descriptions::kDQGramLength>;
-    using NullEqualsNullType = config::OptNullEqualsNull<MetricVerifier>;
-    using ParameterType = config::OptParameter<MetricVerifier>;
-    using DistToNullInfinityType = config::OptDistToNullInfinity<MetricVerifier>;
+    decltype(config::construct_eq_nulls())::Type is_null_equal_null_{};
+    decltype(config::construct_parameter())::Type parameter_{};
+    decltype(config::construct_null_dist_inf())::Type dist_to_null_infinity_{};
+    std::vector<unsigned int> lhs_indices_{};
+    std::vector<unsigned int> rhs_indices_{};
+    std::string metric_{};
+    std::string algo_{};
+    unsigned int q_{};
 
-    struct OptLhsIndices : public OptLhsType {
-        void Set(MetricVerifier& primitive, std::vector<unsigned int> value) override;
-    };
+    bool processing_completed_ = false;
 
-    struct OptMetric : public OptMetricType {
-        void Set(MetricVerifier& primitive, std::string value) override;
-    };
+protected:
+    config::Option<decltype(is_null_equal_null_)> opt_is_null_equal_null_{config::construct_eq_nulls()};
+    config::Option<decltype(parameter_)> opt_parameter_{config::construct_parameter()};
+    config::Option<decltype(dist_to_null_infinity_)> opt_dist_to_null_infinity_{config::construct_null_dist_inf()};
+    config::Option<decltype(lhs_indices_)> opt_lhs_indices_;
+    config::Option<decltype(rhs_indices_)> opt_rhs_indices_;
+    config::Option<decltype(metric_)> opt_metric_;
+    config::Option<decltype(algo_)> opt_algo_;
+    config::Option<decltype(q_)> opt_q_;
 
-    struct OptRhsIndices : public OptRhsType {
-        void Set(MetricVerifier& primitive, std::vector<unsigned int> value) override;
-    };
-
-    struct OptMetricAlgo : public OptMetricAlgoType {
-        OptMetricAlgo() : OptMetricAlgoType("brute") {}
-
-        void Set(MetricVerifier & primitive, std::string value) override;
-    };
-
-    struct OptQ : public OptQType {
-        OptQ() : OptQType(2) {}
-    };
-
-    struct {
-        NullEqualsNullType is_null_equal_null_;
-        ParameterType parameter_;
-        DistToNullInfinityType dist_to_null_infinity_;
-        OptLhsIndices lhs_indices_;
-        OptRhsIndices rhs_indices_;
-        OptMetric metric_;
-        OptMetricAlgo algo_;
-        OptQ q_;
-    } conf_metver_;
-
-    NullEqualsNullType::Type is_null_equal_null_;
-    ParameterType::Type parameter_;
-    DistToNullInfinityType::Type dist_to_null_infinity_;
-    OptLhsIndices::Type lhs_indices_;
-    OptRhsIndices::Type rhs_indices_;
-    OptMetric::Type metric_;
-    OptMetricAlgo::Type algo_;
-    OptQ::Type q_;
+    void SetConfFields() override;
 
 public:
     MetricVerifier();
@@ -95,12 +48,8 @@ public:
     bool SetOption(std::string const& option_name) override;
     [[nodiscard]] std::unordered_set<std::string> GetNeededOptions() const override;
     bool UnsetOption(std::string const& option_name) noexcept override;
-
-protected:
-    void SetConfFields() override;
-
-private:
-    bool processing_completed_ = false;
+    void CheckIndices(std::vector<unsigned int> const& value) const;
+    static void CleanIndices(std::vector<unsigned int>&);
 };
 
 }  // namespace algos

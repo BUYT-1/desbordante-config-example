@@ -60,22 +60,13 @@ protected:
     virtual void SetConfFields() = 0;
 
     // Called by some options to add more options.
-    void AddAvailableOption(std::string const& parent_name, std::string const& option_name) {
-        opt_parents[parent_name].emplace_back(option_name);
-        available_options_.insert(option_name);
-    }
+    void AddAvailableOption(std::string const& parent_name, std::string const& option_name);
+
+    // Called by derived primitives to add more options.
+    void AddAvailableOption(std::string const& option_name);
 
     // Remove options that were added by an option that was unset.
-    void ExcludeOptions(std::string const& parent_option) {
-        auto it = opt_parents.find(parent_option);
-        if (it == opt_parents.end()) return;
-
-        for (auto const& option : it->second) {
-            UnsetOption(option);
-            available_options_.erase(option);
-        }
-        opt_parents.erase(parent_option);
-    }
+    void ExcludeOptions(std::string const& parent_option);
 };
 
 }

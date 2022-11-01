@@ -1,48 +1,65 @@
 #pragma once
 
+#include <any>
+#include <functional>
 #include <optional>
+#include <utility>
+
+#include "Util.h"
 
 namespace algos::config {
 
-template <typename T, typename PT, const std::string * const OptName, const std::string * const Description>
+template <typename T>
+struct OptionFuncs {
+    std::function<void(T const &)> validate_{};
+    std::function<void(T &)> transform_{};
+    std::function<void(T const &)> post_set_{};
+};
+
+template<typename T>
 struct Option {
 public:
     using Type = T;
 
-    Option() : description_(*Description) { }
+    Option(std::string name, std::string description, OptionFuncs<T> funcs, std::optional<T> default_value) :
+    name_(std::move(name)), description_(std::move(description)), validate_(funcs.validate_),
+    transform_(funcs.transform_), post_set_(funcs.post_set_), default_value_(std::move(default_value)) {}
 
-    explicit Option(T default_value) : default_value_(default_value) { }
+    Option(std::string name, std::string description, OptionFuncs<T> funcs) : Option(name, description, funcs, {}) {}
 
-    //Option() : name_(*OptName), description_(*Description) { }
+    Option(std::string name, std::string description, std::optional<T> default_value) : Option(name, description, {},
+                                                                                               default_value) {}
 
-    //explicit Option(T default_value) : name_(*OptName), description_(*Description), default_value_(default_value) { }
-
-    virtual void SetDefault(PT& primitive) {
+    virtual void SetDefault() {
         if (!default_value_.has_value())
             throw std::exception();
-        Set(primitive, default_value_.value());
+        Set(default_value_.value());
     }
 
-    virtual void Set(PT& primitive, T value) {
-        if (is_set_) Unset(primitive);
+    virtual void Set(T value) {
+        if (is_set_) Unset();
+
+        if (validate_) { validate_(value); }
+        if (transform_) transform_(value);
         value_ = value;
         is_set_ = true;
+        if (post_set_) post_set_(value);
     }
 
-    virtual void Unset(PT& primitive) {
+    virtual void Unset() {
         is_set_ = false;
     }
 
-    void SetAny(PT& primitive, std::any value) {
-        Set(primitive, std::any_cast<T>(value));
+    void SetAny(std::any value) {
+        Set(std::any_cast<T>(value));
     }
 
     [[nodiscard]] std::string const& GetName() const {
-        return *OptName;
+        return name_;
     }
 
     [[nodiscard]] std::string const& GetDescription() const {
-        return *Description;
+        return description_;
     }
 
     [[nodiscard]] bool IsSet() const {
@@ -53,7 +70,7 @@ public:
         return value_;
     }
 
-    /*virtual void SetPy(PT& primitive, py::object value) {
+    /*virtual void SetPy(py::object value) {
         if constexpr (is_collection<T>{}) {
             using ElType = is_collection<T>::Type;
             T elements{};
@@ -81,6 +98,9 @@ private:
     std::string description_;
     std::string name_;
     std::optional<T> default_value_{};
+    std::function<void(T const &)> validate_{};
+    std::function<void(T &)> transform_{};
+    std::function<void(T const &)> post_set_{};
 };
 
 }

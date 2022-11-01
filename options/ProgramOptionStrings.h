@@ -1,13 +1,12 @@
 #pragma once
 #include <string>
 
-namespace program_option_strings {
+namespace opt_strings {
 const std::string kHelp = "help";
 const std::string kTask = "task";
 const std::string kAlgorithm = "algorithm";
 const std::string kData = "data";
 const std::string kSeparatorConfig = "separator";
-const std::string kSeparatorLibArg = kSeparatorConfig + ",s";
 const std::string kHasHeader = "has_header";
 const std::string kEqualNulls = "is_null_equal_null";
 const std::string kThreads = "threads";
