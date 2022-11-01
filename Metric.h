@@ -28,6 +28,9 @@ private:
 
     bool processing_completed_ = false;
 
+    void CheckIndices(std::vector<unsigned int> const& value) const;
+    static void CleanIndices(std::vector<unsigned int>&);
+
 protected:
     config::Option<decltype(is_null_equal_null_)> opt_is_null_equal_null_{config::construct_eq_nulls()};
     config::Option<decltype(parameter_)> opt_parameter_{config::construct_parameter()};
@@ -48,8 +51,6 @@ public:
     bool SetOption(std::string const& option_name) override;
     [[nodiscard]] std::unordered_set<std::string> GetNeededOptions() const override;
     bool UnsetOption(std::string const& option_name) noexcept override;
-    void CheckIndices(std::vector<unsigned int> const& value) const;
-    static void CleanIndices(std::vector<unsigned int>&);
 };
 
 }  // namespace algos
