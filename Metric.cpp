@@ -12,40 +12,42 @@ MetricVerifier::MetricVerifier() : Primitive(),
                 {.validate_ = [this](auto value) { CheckIndices(value); }, .transform_ = CleanIndices}),
         opt_rhs_indices_(opt_strings::kRhsIndices, config::descriptions::kDRhsIndices,
                 {.validate_ = [this](auto value) { CheckIndices(value); }, .transform_ = CleanIndices,
-                 .post_set_ = [this](auto value) {
-                     AddAvailableOption(opt_strings::kRhsIndices, posr::kMetric);
-                 }}),
+                 .post_set_ = [this](auto value) { AddAvailableOption(opt_strings::kRhsIndices, posr::kMetric); }}),
         opt_metric_(opt_strings::kMetric, config::descriptions::kDMetric,
                        {.validate_ = [](std::string const &value) {
                            if (!(value == "euclidean" || value == "levenshtein" || value == "cosine"))
                                throw std::invalid_argument("Unsupported metric");
                        }, .post_set_ = [this](std::string const &value) {
+                           std::string const& metric = opt_strings::kMetric;
+                           std::string const& metricAlgorithm = opt_strings::kMetricAlgorithm;
+                           std::string const& qGramLength = opt_strings::kQGramLength;
                            assert(opt_rhs_indices_.IsSet());
                            if (value == "levenshtein") {
-                               AddAvailableOption(opt_strings::kMetric, opt_strings::kMetricAlgorithm);
+                               AddAvailableOption(metric, metricAlgorithm);
                            }
                            else if (value == "cosine") {
-                               AddAvailableOption(opt_strings::kMetric, opt_strings::kMetricAlgorithm);
-                               AddAvailableOption(opt_strings::kMetric, opt_strings::kQGramLength);
+                               AddAvailableOption(metric, metricAlgorithm);
+                               AddAvailableOption(metric, qGramLength);
                            }
                            else /*if (value == "euclidean") */ {
                                if (opt_rhs_indices_.GetValue().size() != 1)
-                                   AddAvailableOption(opt_strings::kMetric, opt_strings::kMetricAlgorithm);
+                                   AddAvailableOption(metric, metricAlgorithm);
                            }
                        }}),
         opt_algo_(opt_strings::kMetricAlgorithm, config::descriptions::kDMetricAlgorithm,
                      {.validate_ = [this](auto value) {
                          assert(opt_metric_.IsSet());
                          assert(opt_rhs_indices_.IsSet());
+                         const auto rhs_size = opt_rhs_indices_.GetValue().size();
+                         const auto metric = opt_metric_.GetValue();
+                         const auto algo_unusable = "Can't use this algorithm with this metric and RHS indices.";
                          if (value == "approx") {
-                             if (opt_metric_.GetValue() == "euclidean" && opt_rhs_indices_.GetValue().size() == 1)
-                                 throw std::invalid_argument("Can't use this algorithm with this metric and "
-                                                             "RHS indices.");
+                             if (metric == "euclidean" && rhs_size == 1)
+                                 throw std::invalid_argument(algo_unusable);
                          }
                          else if (value == "calipers") {
-                             if (!(opt_metric_.GetValue() == "euclidean" && opt_rhs_indices_.GetValue().size() == 2))
-                                 throw std::invalid_argument("Can't use this algorithm with this metric and "
-                                                             "RHS indices.");
+                             if (!(metric == "euclidean" && rhs_size == 2))
+                                 throw std::invalid_argument(algo_unusable);
                          }
                          else {
                              if (value == "brute") return;
