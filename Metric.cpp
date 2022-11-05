@@ -4,7 +4,6 @@
 #include "Metric.h"
 #include "Util.h"
 
-namespace posr = opt_strings;
 namespace algos {
 
 MetricVerifier::MetricVerifier() : Primitive() {
@@ -115,7 +114,7 @@ void MetricVerifier::AddExecOpts() {
                 opt_strings::kMetric, config::descriptions::kDMetric, {.validate = metric_validate,
                         .post_set = metric_post_set}
         ));
-        AddOption(opt_strings::kRhsIndices, posr::kMetric, std::move(metric));
+        AddOption(opt_strings::kRhsIndices, opt_strings::kMetric, std::move(metric));
     };
     auto rhs = std::unique_ptr<config::IOption>(new config::Option<decltype(rhs_indices_)>(
             opt_strings::kRhsIndices, config::descriptions::kDRhsIndices, {.validate = ind_check,
