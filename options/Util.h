@@ -13,7 +13,7 @@ template <template <class> class TP, typename ElT> struct is_collection<TP<ElT>>
 };
 
 template <typename FieldType, typename... Pairs>
-void SetFieldsFromOpt(std::unordered_map<std::string, std::unique_ptr<config::IOption>> const& option_map,
+void SetFieldsFromOpt(std::unordered_map<std::string, std::shared_ptr<config::IOption>> const& option_map,
                       FieldType& field, std::string const& option_name, Pairs&... pairs) {
     auto it = option_map.find(option_name);
     if (it != option_map.end())

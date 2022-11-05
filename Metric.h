@@ -30,7 +30,8 @@ private:
 
     void CheckIndices(std::vector<unsigned int> const& value) const;
     void CleanIndices(std::vector<unsigned int>& value) const;
-    void AddExecOpts();
+    void SetExecOpts();
+    void AddPossibleOpts();
 
 protected:
     void SetConfFields() override;

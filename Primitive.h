@@ -20,7 +20,8 @@ private:
     std::unordered_map<std::string, std::vector<std::string>> opt_parents_{};
 protected:
     using StreamRef = model::IDatasetStream &;
-    std::unordered_map<std::string, std::unique_ptr<config::IOption>> option_map_;
+    std::unordered_map<std::string, std::shared_ptr<config::IOption>> option_map_{};
+    std::unordered_map<std::string, std::shared_ptr<config::IOption>> possible_options_{};
 
 public:
     Primitive() = default;
@@ -60,10 +61,11 @@ public:
 protected:
     virtual void SetConfFields() = 0;
 
-    void AddOption(std::string const& parent_name, std::string const& option_name,
-                   std::unique_ptr<config::IOption> option);
+    void AddAvailableOption(std::string const& parent_name, std::string const& option_name);
 
-    void AddOption(std::string const& option_name, std::unique_ptr<config::IOption> option);
+    void AddAvailableOption(std::string const& option_name);
+
+    void AddPossibleOption(std::string const& option_name, std::shared_ptr<config::IOption> option);
 
     // Remove options that were added by an option that was unset.
     void ExcludeOptions(std::string const& parent_option);

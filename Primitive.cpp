@@ -1,15 +1,8 @@
 #include "Primitive.h"
 
-namespace algos {
-void Primitive::AddOption(const std::string &option_name, std::unique_ptr<config::IOption> option) {
-    option_map_.insert(std::make_pair(option_name, std::move(option)));
-}
+#include <utility>
 
-void Primitive::AddOption(const std::string &parent_name, const std::string &option_name,
-                          std::unique_ptr<config::IOption> option) {
-    option_map_.insert(std::make_pair(option_name, std::move(option)));
-    opt_parents_[parent_name].emplace_back(option_name);
-}
+namespace algos {
 
 void Primitive::ExcludeOptions(std::string const& parent_option) {
     auto it = opt_parents_.find(parent_option);
@@ -51,6 +44,21 @@ void Primitive::UnsetOption(const std::string &option_name) noexcept {
         return;
     it->second->Unset();
     ExcludeOptions(option_name);
+}
+
+void Primitive::AddAvailableOption(const std::string &option_name) {
+    auto it = possible_options_.find(option_name);
+    assert(it != possible_options_.end());
+    option_map_[option_name] = it->second;
+}
+
+void Primitive::AddAvailableOption(const std::string &parent_name, const std::string &option_name) {
+    AddAvailableOption(option_name);
+    opt_parents_[parent_name].emplace_back(option_name);
+}
+
+void Primitive::AddPossibleOption(const std::string &option_name, std::shared_ptr<config::IOption> option) {
+    possible_options_[option_name] = std::move(option);
 }
 
 }  // namespace algos
