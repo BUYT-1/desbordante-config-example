@@ -5,38 +5,52 @@
 #include <optional>
 #include <utility>
 
-#include "Util.h"
-
 namespace algos::config {
+
+struct IOption {
+    virtual void SetDefault() = 0;
+    virtual void SetAny(std::any value) = 0;
+    virtual void Unset() = 0;
+    [[nodiscard]] virtual bool IsSet() const = 0;
+
+    template <typename T>
+    T GetValue() const {
+        return std::any_cast<T>(GetValueAny());
+    }
+
+    virtual ~IOption() = default;
+
+protected:
+    [[nodiscard]] virtual std::any GetValueAny() const = 0;
+};
 
 template <typename T>
 struct OptionFuncs {
-    std::function<void(T const &)> validate_{};
-    std::function<void(T &)> transform_{};
-    std::function<void(T const &)> post_set_{};
+    std::function<void(T const &)> validate{};
+    std::function<void(T &)> transform{};
+    std::function<void(T const &)> post_set{};
 };
 
 template<typename T>
-struct Option {
+struct Option : public IOption {
 public:
     using Type = T;
 
-    Option(std::string name, std::string description, OptionFuncs<T> funcs, std::optional<T> default_value) :
-    name_(std::move(name)), description_(std::move(description)), validate_(funcs.validate_),
-    transform_(funcs.transform_), post_set_(funcs.post_set_), default_value_(std::move(default_value)) {}
+    Option(std::string name, std::string description, std::optional<T> default_value = {},
+           OptionFuncs<T> funcs = {}) : name_(std::move(name)), description_(std::move(description)),
+           validate_(std::move(funcs.validate)), transform_(std::move(funcs.transform)),
+           post_set_(std::move(funcs.post_set)), default_value_(std::move(default_value)) {}
 
-    Option(std::string name, std::string description, OptionFuncs<T> funcs) : Option(name, description, funcs, {}) {}
+    Option(std::string name, std::string description, OptionFuncs<T> funcs = {}) : Option(name, description, {}, funcs)
+    {}
 
-    Option(std::string name, std::string description, std::optional<T> default_value) : Option(name, description, {},
-                                                                                               default_value) {}
-
-    virtual void SetDefault() {
+    void SetDefault() override {
         if (!default_value_.has_value())
             throw std::exception();
         Set(default_value_.value());
     }
 
-    virtual void Set(T value) {
+    void Set(T value) {
         if (is_set_) Unset();
 
         if (validate_) { validate_(value); }
@@ -46,11 +60,11 @@ public:
         if (post_set_) post_set_(value);
     }
 
-    virtual void Unset() {
+    void Unset() override {
         is_set_ = false;
     }
 
-    void SetAny(std::any value) {
+    void SetAny(std::any value) override {
         Set(std::any_cast<T>(value));
     }
 
@@ -62,11 +76,11 @@ public:
         return description_;
     }
 
-    [[nodiscard]] bool IsSet() const {
+    [[nodiscard]] bool IsSet() const override {
         return is_set_;
     }
 
-    T const& GetValue() const {
+    [[nodiscard]] std::any GetValueAny() const override {
         return value_;
     }
 

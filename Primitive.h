@@ -1,6 +1,7 @@
 #pragma once
 
 #include <any>
+#include <cassert>
 #include <memory>
 #include <filesystem>
 #include <unordered_set>
@@ -8,6 +9,7 @@
 
 #include "IDatasetStream.h"
 #include "CSVParser.h"
+#include "Option.h"
 
 namespace algos {
 
@@ -15,11 +17,10 @@ class Primitive {
 private:
     // For automatically making options unavailable (so they can't be set)
     // [see: Primitive::ExcludeOptions].
-    std::unordered_map<std::string, std::vector<std::string>> opt_parents{};
+    std::unordered_map<std::string, std::vector<std::string>> opt_parents_{};
 protected:
     using StreamRef = model::IDatasetStream &;
-    // The set of all options which can be set from the outside when the primitive is in some state.
-    std::unordered_set<std::string> available_options_{};
+    std::unordered_map<std::string, std::unique_ptr<config::IOption>> option_map_;
 
 public:
     Primitive() = default;
@@ -37,10 +38,10 @@ public:
     virtual unsigned long long Execute() = 0;
 
     // Set the value of an option.
-    virtual bool SetOption(std::string const& option_name, std::any const& value) = 0;
+    void SetOption(std::string const& option_name, std::any const& value);
 
     // Set the default value of an option.
-    virtual bool SetOption(std::string const& option_name) = 0;
+    void SetOption(std::string const& option_name);
 
     // Set the value of an option from a Python object.
     /* virtual bool SetOption(string option_name, py::object obj) = 0 */
@@ -52,21 +53,29 @@ public:
     /* virtual po::options_description GetOptionsDescription() = 0 */
 
     // Get options that need to be set
-    [[nodiscard]] virtual std::unordered_set<std::string> GetNeededOptions() const = 0;
+    [[nodiscard]] std::unordered_set<std::string> GetNeededOptions() const;
 
-    virtual bool UnsetOption(std::string const& option_name) noexcept = 0;
+    void UnsetOption(std::string const& option_name) noexcept;
 
 protected:
     virtual void SetConfFields() = 0;
 
-    // Called by some options to add more options.
-    void AddAvailableOption(std::string const& parent_name, std::string const& option_name);
+    void AddOption(std::string const& parent_name, std::string const& option_name,
+                   std::unique_ptr<config::IOption> option);
 
-    // Called by derived primitives to add more options.
-    void AddAvailableOption(std::string const& option_name);
+    void AddOption(std::string const& option_name, std::unique_ptr<config::IOption> option);
 
     // Remove options that were added by an option that was unset.
     void ExcludeOptions(std::string const& parent_option);
+
+    template<typename T>
+    T GetOptionValue(std::string const& opt_name) {
+        auto it = option_map_.find(opt_name);
+        assert(it != option_map_.end());
+        auto& opt_ptr = it->second;
+        assert(opt_ptr != nullptr);
+        return opt_ptr->GetValue<T>();
+    }
 };
 
 }
