@@ -61,9 +61,9 @@ void MetricVerifier::SetExecOpts() {
 }
 
 void MetricVerifier::AddPossibleOpts() {
-    AddPossibleOption(opt_strings::kEqualNulls, config::construct_eq_nulls());
-    AddPossibleOption(opt_strings::kDistToNullIsInfinity, config::construct_null_dist_inf());
-    AddPossibleOption(opt_strings::kParameter, config::construct_parameter());
+    AddPossibleOption(config::construct_eq_nulls());
+    AddPossibleOption(config::construct_null_dist_inf());
+    AddPossibleOption(config::construct_parameter());
 
     auto ind_check = [this](auto value) { CheckIndices(value); };
     auto ind_clean = [this](auto value) { CleanIndices(value); };
@@ -71,7 +71,7 @@ void MetricVerifier::AddPossibleOpts() {
     auto lhs = std::shared_ptr<config::IOption>(new config::Option<decltype(lhs_indices_)>(
             opt_strings::kLhsIndices, config::descriptions::kDLhsIndices, {},
             {.validate = ind_check, .transform = ind_clean}));
-    AddPossibleOption(opt_strings::kLhsIndices, lhs);
+    AddPossibleOption(lhs);
 
     auto rhs_post_set = [this](auto value) {
         AddAvailableOption(opt_strings::kRhsIndices, opt_strings::kMetric);
@@ -79,7 +79,7 @@ void MetricVerifier::AddPossibleOpts() {
     auto rhs = std::shared_ptr<config::IOption>(new config::Option<decltype(rhs_indices_)>(
             opt_strings::kRhsIndices, config::descriptions::kDRhsIndices, {
                     .validate = ind_check, .transform = ind_clean, .post_set = rhs_post_set}));
-    AddPossibleOption(opt_strings::kRhsIndices, std::move(rhs));
+    AddPossibleOption(std::move(rhs));
 
     auto metric_validate = [](std::string const &value) {
         if (!(value == "euclidean" || value == "levenshtein" || value == "cosine"))
@@ -106,7 +106,7 @@ void MetricVerifier::AddPossibleOpts() {
             opt_strings::kMetric, config::descriptions::kDMetric, {.validate = metric_validate,
                     .post_set = metric_post_set}
     ));
-    AddPossibleOption(opt_strings::kMetric, metric);
+    AddPossibleOption(metric);
 
     auto algo_validate = [this](auto value) {
         auto const& rhs_val = GetOptionValue<decltype(rhs_indices_)>(opt_strings::kRhsIndices);
@@ -127,12 +127,12 @@ void MetricVerifier::AddPossibleOpts() {
     auto algo = std::shared_ptr<config::IOption>(new config::Option<decltype(algo_)>(
             opt_strings::kMetricAlgorithm, config::descriptions::kDMetricAlgorithm, {.validate = algo_validate}
     ));
-    AddPossibleOption(opt_strings::kMetricAlgorithm, algo);
+    AddPossibleOption(algo);
 
     auto q = std::shared_ptr<config::IOption>(new config::Option<decltype(q_)>(
             opt_strings::kQGramLength, config::descriptions::kDQGramLength, 2
     ));
-    AddPossibleOption(opt_strings::kQGramLength, q);
+    AddPossibleOption(q);
 }
 
 }

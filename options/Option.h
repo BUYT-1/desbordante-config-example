@@ -12,6 +12,7 @@ struct IOption {
     virtual void SetAny(std::any value) = 0;
     virtual void Unset() = 0;
     [[nodiscard]] virtual bool IsSet() const = 0;
+    [[nodiscard]] virtual std::string const& GetName() const = 0;
 
     template <typename T>
     T GetValue() const {
@@ -68,7 +69,7 @@ public:
         Set(std::any_cast<T>(value));
     }
 
-    [[nodiscard]] std::string const& GetName() const {
+    [[nodiscard]] std::string const& GetName() const override {
         return name_;
     }
 

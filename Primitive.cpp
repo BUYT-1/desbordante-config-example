@@ -57,8 +57,8 @@ void Primitive::AddAvailableOption(const std::string &parent_name, const std::st
     opt_parents_[parent_name].emplace_back(option_name);
 }
 
-void Primitive::AddPossibleOption(const std::string &option_name, std::shared_ptr<config::IOption> option) {
-    possible_options_[option_name] = std::move(option);
+void Primitive::AddPossibleOption(std::shared_ptr<config::IOption> option) {
+    possible_options_[option->GetName()] = std::move(option);
 }
 
 }  // namespace algos

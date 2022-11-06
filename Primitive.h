@@ -65,7 +65,7 @@ protected:
 
     void AddAvailableOption(std::string const& option_name);
 
-    void AddPossibleOption(std::string const& option_name, std::shared_ptr<config::IOption> option);
+    void AddPossibleOption(std::shared_ptr<config::IOption> option);
 
     // Remove options that were added by an option that was unset.
     void ExcludeOptions(std::string const& parent_option);
