@@ -65,4 +65,8 @@ void Primitive::AddPossibleOption(std::shared_ptr<config::IOption> option) {
     possible_options_[option->GetName()] = std::move(option);
 }
 
+void Primitive::ClearOptions() noexcept {
+    option_map_.clear();
+}
+
 }  // namespace algos

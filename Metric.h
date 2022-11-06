@@ -7,19 +7,15 @@
 #include "ProgramOptionStrings.h"
 #include "Option.h"
 #include "Descriptions.h"
-#include "CommonOptions.h"
+#include "OptionTypes.h"
 
 namespace algos {
 
 class MetricVerifier : public Primitive {
-    // Note: it may make sense to split everything related to configuration
-    // into some other class. However, this would make everything more
-    // complicated, and there doesn't seem to be a practical use to justify
-    // the complexity.
 private:
-    decltype(config::construct_eq_nulls())::element_type::Type is_null_equal_null_{};
-    decltype(config::construct_parameter())::element_type::Type parameter_{};
-    decltype(config::construct_null_dist_inf())::element_type::Type dist_to_null_infinity_{};
+    config::EqNullsType is_null_equal_null_{};
+    config::ParameterType parameter_{};
+    config::NullDIstInfType dist_to_null_infinity_{};
     std::vector<unsigned int> lhs_indices_{};
     std::vector<unsigned int> rhs_indices_{};
     std::string metric_{};
@@ -29,12 +25,14 @@ private:
     bool processing_completed_ = false;
 
     void CheckIndices(std::vector<unsigned int> const& value) const;
-    void CleanIndices(std::vector<unsigned int>& value) const;
     void SetExecOpts();
     void AddPossibleOpts();
 
-protected:
-    void SetConfFields() override;
+    static config::OptionInfo<decltype(lhs_indices_)> LhsIndices;
+    static config::OptionInfo<decltype(rhs_indices_)> RhsIndices;
+    static config::OptionInfo<decltype(metric_)> Metric;
+    static config::OptionInfo<decltype(algo_)> Algo;
+    static config::OptionInfo<decltype(q_)> QGramLength;
 
 public:
     MetricVerifier();

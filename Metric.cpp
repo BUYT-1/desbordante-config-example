@@ -6,32 +6,46 @@
 
 namespace algos {
 
+void TransformIndices(std::vector<unsigned int>& value) {
+    if (value.empty()) {
+        throw std::invalid_argument("Indices cannot be empty");
+    }
+    std::sort(value.begin(), value.end());
+    value.erase(std::unique(value.begin(), value.end()), value.end());
+}
+
+decltype(MetricVerifier::LhsIndices) MetricVerifier::LhsIndices{
+    opt_strings::kLhsIndices, config::descriptions::kDLhsIndices, TransformIndices
+};
+
+decltype(MetricVerifier::RhsIndices) MetricVerifier::RhsIndices{
+    opt_strings::kRhsIndices, config::descriptions::kDRhsIndices, TransformIndices
+};
+
+decltype(MetricVerifier::Metric) MetricVerifier::Metric{
+    opt_strings::kMetric, config::descriptions::kDMetric, [](auto value) {
+        if (!(value == "euclidean" || value == "levenshtein" || value == "cosine"))
+            throw std::invalid_argument("Unsupported metric");
+    }
+};
+
+decltype(MetricVerifier::Algo) MetricVerifier::Algo{
+    opt_strings::kMetricAlgorithm, config::descriptions::kDMetricAlgorithm, "brute", [](auto value) {
+        if (!(value == "brute" || value == "approx" || value == "calipers"))
+            throw std::invalid_argument("Unsupported metric");
+    }
+};
+
+decltype(MetricVerifier::QGramLength) MetricVerifier::QGramLength{opt_strings::kQGramLength,
+                                                                  config::descriptions::kDQGramLength, 2};
+
 MetricVerifier::MetricVerifier() : Primitive() {
     AddPossibleOpts();
     MakeOptionsAvailable({opt_strings::kEqualNulls});
 }
 
-void MetricVerifier::CleanIndices(std::vector<unsigned int>& value) const {
-    std::sort(value.begin(), value.end());
-    value.erase(std::unique(value.begin(), value.end()), value.end());
-}
-
-void MetricVerifier::SetConfFields() {
-    // A call to base::SetConfFields can be here
-    config::util::SetFieldsFromOpt(option_map_,
-            is_null_equal_null_, opt_strings::kEqualNulls,
-            parameter_, opt_strings::kParameter,
-            dist_to_null_infinity_, opt_strings::kDistToNullIsInfinity,
-            lhs_indices_, opt_strings::kLhsIndices,
-            rhs_indices_, opt_strings::kRhsIndices,
-            metric_, opt_strings::kMetric,
-            algo_, opt_strings::kMetricAlgorithm,
-            q_, opt_strings::kQGramLength);
-}
-
 void MetricVerifier::Fit(StreamRef input_generator) {
     if (!GetNeededOptions().empty()) throw std::logic_error("Need to set all options first.");
-    SetConfFields();
     // Some transformations
     processing_completed_ = true;
     SetExecOpts();
@@ -40,54 +54,34 @@ void MetricVerifier::Fit(StreamRef input_generator) {
 unsigned long long MetricVerifier::Execute() {
     if (!(processing_completed_ && GetNeededOptions().empty()))
         throw std::logic_error("Need to set all options first.");
-    SetConfFields();
     // Processing
     return 12345;
 }
 
 void MetricVerifier::CheckIndices(const std::vector<unsigned int>& value) const {
-    if (value.empty()) {
-        throw std::invalid_argument("Indices cannot be empty");
-    }
     // OOB check
 }
 
 void MetricVerifier::SetExecOpts() {
-    option_map_.clear();
+    ClearOptions();
     MakeOptionsAvailable({opt_strings::kParameter, opt_strings::kDistToNullIsInfinity, opt_strings::kLhsIndices,
                           opt_strings::kRhsIndices});
 }
 
 void MetricVerifier::AddPossibleOpts() {
-    AddPossibleOption(config::construct_eq_nulls());
-    AddPossibleOption(config::construct_null_dist_inf());
-    AddPossibleOption(config::construct_parameter());
-
-    auto ind_check = [this](auto value) { CheckIndices(value); };
-    auto ind_clean = [this](auto value) { CleanIndices(value); };
-
-    auto lhs = std::shared_ptr<config::IOption>(new config::Option<decltype(lhs_indices_)>(
-            opt_strings::kLhsIndices, config::descriptions::kDLhsIndices, {},
-            {.validate = ind_check, .transform = ind_clean}));
-    AddPossibleOption(lhs);
-
-    auto rhs_post_set = [this](auto value) {
+    AddPossibleOption(config::EqualNulls.GetOption([this](auto value) { is_null_equal_null_ = value; }));
+    AddPossibleOption(config::NullDistInf.GetOption([this](auto value) { dist_to_null_infinity_ = value; }));
+    AddPossibleOption(config::Parameter.GetOption([this](auto value) {parameter_ = value; }));
+    AddPossibleOption(LhsIndices.GetOption([this](auto value) { CheckIndices(value); lhs_indices_ = value; }));
+    AddPossibleOption(RhsIndices.GetOption([this](auto value) { CheckIndices(value); rhs_indices_ = value; },
+                                           [this](auto) {
         MakeOptionsAvailable(opt_strings::kRhsIndices, {opt_strings::kMetric});
-    };
-    auto rhs = std::shared_ptr<config::IOption>(new config::Option<decltype(rhs_indices_)>(
-            opt_strings::kRhsIndices, config::descriptions::kDRhsIndices, {
-                    .validate = ind_check, .transform = ind_clean, .post_set = rhs_post_set}));
-    AddPossibleOption(std::move(rhs));
+    }));
 
-    auto metric_validate = [](std::string const &value) {
-        if (!(value == "euclidean" || value == "levenshtein" || value == "cosine"))
-            throw std::invalid_argument("Unsupported metric");
-    };
     auto metric_post_set = [this](std::string const &value) {
         std::string const& metric = opt_strings::kMetric;
         std::string const& metricAlgorithm = opt_strings::kMetricAlgorithm;
         std::string const& qGramLength = opt_strings::kQGramLength;
-        auto const& rhs_val = GetOptionValue<decltype(rhs_indices_)>(opt_strings::kRhsIndices);
         if (value == "levenshtein") {
             MakeOptionsAvailable(metric, {metricAlgorithm});
         }
@@ -95,19 +89,15 @@ void MetricVerifier::AddPossibleOpts() {
             MakeOptionsAvailable(metric, {metricAlgorithm, qGramLength});
         }
         else /*if (value == "euclidean") */ {
-            if (rhs_val.size() != 1)
+            if (rhs_indices_.size() != 1)
                 MakeOptionsAvailable(metric, {metricAlgorithm});
         }
     };
-    auto metric = std::shared_ptr<config::IOption>(new config::Option<decltype(metric_)>(
-            opt_strings::kMetric, config::descriptions::kDMetric, {.validate = metric_validate,
-                    .post_set = metric_post_set}
-    ));
-    AddPossibleOption(metric);
+    AddPossibleOption(Metric.GetOption([this](auto value) { metric_ = value; }, metric_post_set));
 
-    auto algo_validate = [this](auto value) {
-        auto const& rhs_val = GetOptionValue<decltype(rhs_indices_)>(opt_strings::kRhsIndices);
-        auto const& metr_val = GetOptionValue<decltype(metric_)>(opt_strings::kMetric);
+    auto algo_set = [this](auto value) {
+        auto const& rhs_val = rhs_indices_;
+        auto const& metr_val = metric_;
         const auto algo_unusable = "Can't use this algorithm with this metric and RHS indices.";
         if (value == "approx") {
             if (metr_val == "euclidean" && rhs_val.size() == 1)
@@ -117,19 +107,11 @@ void MetricVerifier::AddPossibleOpts() {
             if (!(metr_val == "euclidean" && rhs_val.size() == 2))
                 throw std::invalid_argument(algo_unusable);
         }
-        else {
-            if (value == "brute") return;
-            throw std::invalid_argument("Unknown algorithm.");
-        }};
-    auto algo = std::shared_ptr<config::IOption>(new config::Option<decltype(algo_)>(
-            opt_strings::kMetricAlgorithm, config::descriptions::kDMetricAlgorithm, {.validate = algo_validate}
-    ));
-    AddPossibleOption(algo);
+        algo_ = value;
+    };
+    AddPossibleOption(Algo.GetOption(algo_set));
 
-    auto q = std::shared_ptr<config::IOption>(new config::Option<decltype(q_)>(
-            opt_strings::kQGramLength, config::descriptions::kDQGramLength, 2
-    ));
-    AddPossibleOption(q);
+    AddPossibleOption(QGramLength.GetOption([this](auto value) { q_ = value; }));
 }
 
 }
