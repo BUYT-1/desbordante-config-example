@@ -8,7 +8,7 @@ namespace algos {
 
 MetricVerifier::MetricVerifier() : Primitive() {
     AddPossibleOpts();
-    AddAvailableOption(opt_strings::kEqualNulls);
+    MakeOptionsAvailable({opt_strings::kEqualNulls});
 }
 
 void MetricVerifier::CleanIndices(std::vector<unsigned int>& value) const {
@@ -54,10 +54,8 @@ void MetricVerifier::CheckIndices(const std::vector<unsigned int>& value) const 
 
 void MetricVerifier::SetExecOpts() {
     option_map_.clear();
-    AddAvailableOption(opt_strings::kParameter);
-    AddAvailableOption(opt_strings::kDistToNullIsInfinity);
-    AddAvailableOption(opt_strings::kLhsIndices);
-    AddAvailableOption(opt_strings::kRhsIndices);
+    MakeOptionsAvailable({opt_strings::kParameter, opt_strings::kDistToNullIsInfinity, opt_strings::kLhsIndices,
+                          opt_strings::kRhsIndices});
 }
 
 void MetricVerifier::AddPossibleOpts() {
@@ -74,7 +72,7 @@ void MetricVerifier::AddPossibleOpts() {
     AddPossibleOption(lhs);
 
     auto rhs_post_set = [this](auto value) {
-        AddAvailableOption(opt_strings::kRhsIndices, opt_strings::kMetric);
+        MakeOptionsAvailable(opt_strings::kRhsIndices, {opt_strings::kMetric});
     };
     auto rhs = std::shared_ptr<config::IOption>(new config::Option<decltype(rhs_indices_)>(
             opt_strings::kRhsIndices, config::descriptions::kDRhsIndices, {
@@ -91,15 +89,14 @@ void MetricVerifier::AddPossibleOpts() {
         std::string const& qGramLength = opt_strings::kQGramLength;
         auto const& rhs_val = GetOptionValue<decltype(rhs_indices_)>(opt_strings::kRhsIndices);
         if (value == "levenshtein") {
-            AddAvailableOption(metric, metricAlgorithm);
+            MakeOptionsAvailable(metric, {metricAlgorithm});
         }
         else if (value == "cosine") {
-            AddAvailableOption(metric, metricAlgorithm);
-            AddAvailableOption(metric, qGramLength);
+            MakeOptionsAvailable(metric, {metricAlgorithm, qGramLength});
         }
         else /*if (value == "euclidean") */ {
             if (rhs_val.size() != 1)
-                AddAvailableOption(metric, metricAlgorithm);
+                MakeOptionsAvailable(metric, {metricAlgorithm});
         }
     };
     auto metric = std::shared_ptr<config::IOption>(new config::Option<decltype(metric_)>(

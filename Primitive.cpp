@@ -46,15 +46,19 @@ void Primitive::UnsetOption(const std::string &option_name) noexcept {
     ExcludeOptions(option_name);
 }
 
-void Primitive::AddAvailableOption(const std::string &option_name) {
-    auto it = possible_options_.find(option_name);
-    assert(it != possible_options_.end());
-    option_map_[option_name] = it->second;
+void Primitive::MakeOptionsAvailable(const std::vector<std::string> &option_names) {
+    for (const auto& option_name : option_names) {
+        auto it = possible_options_.find(option_name);
+        assert(it != possible_options_.end());
+        option_map_[option_name] = it->second;
+    }
 }
 
-void Primitive::AddAvailableOption(const std::string &parent_name, const std::string &option_name) {
-    AddAvailableOption(option_name);
-    opt_parents_[parent_name].emplace_back(option_name);
+void Primitive::MakeOptionsAvailable(const std::string &parent_name, std::vector<std::string> const &option_names) {
+    MakeOptionsAvailable(option_names);
+    for (const auto& option_name : option_names) {
+        opt_parents_[parent_name].emplace_back(option_name);
+    }
 }
 
 void Primitive::AddPossibleOption(std::shared_ptr<config::IOption> option) {

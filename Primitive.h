@@ -61,9 +61,9 @@ public:
 protected:
     virtual void SetConfFields() = 0;
 
-    void AddAvailableOption(std::string const& parent_name, std::string const& option_name);
+    void MakeOptionsAvailable(std::string const& parent_name, std::vector<std::string> const& option_names);
 
-    void AddAvailableOption(std::string const& option_name);
+    void MakeOptionsAvailable(std::vector<std::string> const& option_names);
 
     void AddPossibleOption(std::shared_ptr<config::IOption> option);
 
