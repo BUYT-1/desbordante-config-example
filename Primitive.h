@@ -33,8 +33,7 @@ public:
 
     virtual ~Primitive() = default;
 
-    // Transform raw data into a format suitable for a particular primitive.
-    virtual void Fit(StreamRef input_generator) = 0;
+    void Fit(StreamRef input_generator);
 
     virtual unsigned long long Execute() = 0;
 
@@ -59,6 +58,10 @@ public:
     void UnsetOption(std::string const& option_name) noexcept;
 
 protected:
+    virtual void FitInternal(StreamRef input_generator) = 0;
+
+    virtual void SetExecuteOpts() = 0;
+
     void MakeOptionsAvailable(std::string const& parent_name, std::vector<std::string> const& option_names);
 
     void MakeOptionsAvailable(std::vector<std::string> const& option_names);

@@ -44,11 +44,9 @@ MetricVerifier::MetricVerifier() : Primitive() {
     MakeOptionsAvailable({opt_strings::kEqualNulls});
 }
 
-void MetricVerifier::Fit(StreamRef input_generator) {
-    if (!GetNeededOptions().empty()) throw std::logic_error("Need to set all options first.");
+void MetricVerifier::FitInternal(StreamRef input_generator) {
     // Some transformations
     processing_completed_ = true;
-    SetExecOpts();
 }
 
 unsigned long long MetricVerifier::Execute() {
@@ -62,7 +60,7 @@ void MetricVerifier::CheckIndices(const std::vector<unsigned int>& value) const 
     // OOB check
 }
 
-void MetricVerifier::SetExecOpts() {
+void MetricVerifier::SetExecuteOpts() {
     ClearOptions();
     MakeOptionsAvailable({opt_strings::kParameter, opt_strings::kDistToNullIsInfinity, opt_strings::kLhsIndices,
                           opt_strings::kRhsIndices});

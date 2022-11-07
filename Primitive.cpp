@@ -2,6 +2,12 @@
 
 namespace algos {
 
+void Primitive::Fit(StreamRef input_generator) {
+    if (!GetNeededOptions().empty()) throw std::logic_error("Need to set all options first.");
+    FitInternal(input_generator);
+    SetExecuteOpts();
+}
+
 void Primitive::ExcludeOptions(std::string const& parent_option) {
     auto it = opt_parents_.find(parent_option);
     if (it == opt_parents_.end()) return;

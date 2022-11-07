@@ -25,7 +25,8 @@ private:
     bool processing_completed_ = false;
 
     void CheckIndices(std::vector<unsigned int> const& value) const;
-    void SetExecOpts();
+    void SetExecuteOpts() override;
+    void FitInternal(StreamRef input_generator) override;
     void AddPossibleOpts();
 
     static const config::OptionType<decltype(lhs_indices_)> LhsIndices;
@@ -36,7 +37,6 @@ private:
 
 public:
     MetricVerifier();
-    void Fit(StreamRef input_generator) override;
     unsigned long long Execute() override;
 };
 
