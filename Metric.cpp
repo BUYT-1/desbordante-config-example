@@ -1,8 +1,8 @@
 #include <vector>
 #include <iostream>
 
+#include "Option.h"
 #include "Metric.h"
-#include "Util.h"
 
 namespace algos {
 
@@ -69,49 +69,42 @@ void MetricVerifier::SetExecOpts() {
 }
 
 void MetricVerifier::AddPossibleOpts() {
-    AddPossibleOption(config::EqualNulls.GetOption([this](auto value) { is_null_equal_null_ = value; }));
-    AddPossibleOption(config::NullDistInf.GetOption([this](auto value) { dist_to_null_infinity_ = value; }));
-    AddPossibleOption(config::Parameter.GetOption([this](auto value) {parameter_ = value; }));
-    AddPossibleOption(LhsIndices.GetOption([this](auto value) { CheckIndices(value); lhs_indices_ = value; }));
-    AddPossibleOption(RhsIndices.GetOption([this](auto value) { CheckIndices(value); rhs_indices_ = value; },
-                                           [this](auto) {
-        MakeOptionsAvailable(opt_strings::kRhsIndices, {opt_strings::kMetric});
-    }));
-
-    auto metric_post_set = [this](std::string const &value) {
-        std::string const& metric = opt_strings::kMetric;
-        std::string const& metricAlgorithm = opt_strings::kMetricAlgorithm;
-        std::string const& qGramLength = opt_strings::kQGramLength;
+    auto check_ind = [this](auto value) { CheckIndices(value); };
+    auto metric_post_set = [this](decltype(Metric.GetOption()) const& option, auto value) {
+        std::string const &metricAlgorithm = opt_strings::kMetricAlgorithm;
+        std::string const &qGramLength = opt_strings::kQGramLength;
         if (value == "levenshtein") {
-            MakeOptionsAvailable(metric, {metricAlgorithm});
-        }
-        else if (value == "cosine") {
-            MakeOptionsAvailable(metric, {metricAlgorithm, qGramLength});
-        }
-        else /*if (value == "euclidean") */ {
+            MakeOptionsAvailable(option.GetName(), {metricAlgorithm});
+        } else if (value == "cosine") {
+            MakeOptionsAvailable(option.GetName(), {metricAlgorithm, qGramLength});
+        } else /*if (value == "euclidean") */ {
             if (rhs_indices_.size() != 1)
-                MakeOptionsAvailable(metric, {metricAlgorithm});
+                MakeOptionsAvailable(option.GetName(), {metricAlgorithm});
         }
     };
-    AddPossibleOption(Metric.GetOption([this](auto value) { metric_ = value; }, metric_post_set));
 
-    auto algo_set = [this](auto value) {
-        auto const& rhs_val = rhs_indices_;
-        auto const& metr_val = metric_;
+    auto algo_check = [this](auto value) {
         const auto algo_unusable = "Can't use this algorithm with this metric and RHS indices.";
         if (value == "approx") {
-            if (metr_val == "euclidean" && rhs_val.size() == 1)
+            if (metric_ == "euclidean" && rhs_indices_.size() == 1)
                 throw std::invalid_argument(algo_unusable);
         }
         else if (value == "calipers") {
-            if (!(metr_val == "euclidean" && rhs_val.size() == 2))
+            if (!(metric_ == "euclidean" && rhs_indices_.size() == 2))
                 throw std::invalid_argument(algo_unusable);
         }
-        algo_ = value;
     };
-    AddPossibleOption(Algo.GetOption(algo_set));
 
-    AddPossibleOption(QGramLength.GetOption([this](auto value) { q_ = value; }));
+    AddPossibleOption(config::EqualNulls.GetOption().SetSetter(&is_null_equal_null_));
+    AddPossibleOption(config::NullDistInf.GetOption().SetSetter(&dist_to_null_infinity_));
+    AddPossibleOption(config::Parameter.GetOption().SetSetter(&parameter_));
+    AddPossibleOption(LhsIndices.GetOption().SetSetter(&lhs_indices_, check_ind));
+    AddPossibleOption(RhsIndices.GetOption().SetSetter(&rhs_indices_, check_ind).SetPostSetFunc(
+            [this](auto opt, auto) { MakeOptionsAvailable(opt.GetName(), {opt_strings::kMetric}); }));
+
+    AddPossibleOption(Metric.GetOption().SetSetter(&metric_).SetPostSetFunc(metric_post_set));
+    AddPossibleOption(Algo.GetOption().SetSetter(&algo_, algo_check));
+    AddPossibleOption(QGramLength.GetOption().SetSetter(&q_));
 }
 
 }

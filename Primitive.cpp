@@ -1,7 +1,5 @@
 #include "Primitive.h"
 
-#include <utility>
-
 namespace algos {
 
 void Primitive::ExcludeOptions(std::string const& parent_option) {
@@ -59,10 +57,6 @@ void Primitive::MakeOptionsAvailable(const std::string &parent_name, std::vector
     for (const auto& option_name : option_names) {
         opt_parents_[parent_name].emplace_back(option_name);
     }
-}
-
-void Primitive::AddPossibleOption(std::shared_ptr<config::IOption> option) {
-    possible_options_[option->GetName()] = std::move(option);
 }
 
 void Primitive::ClearOptions() noexcept {

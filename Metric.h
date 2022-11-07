@@ -28,11 +28,11 @@ private:
     void SetExecOpts();
     void AddPossibleOpts();
 
-    static const config::OptionInfo<decltype(lhs_indices_)> LhsIndices;
-    static const config::OptionInfo<decltype(rhs_indices_)> RhsIndices;
-    static const config::OptionInfo<decltype(metric_)> Metric;
-    static const config::OptionInfo<decltype(algo_)> Algo;
-    static const config::OptionInfo<decltype(q_)> QGramLength;
+    static const config::OptionType<decltype(lhs_indices_)> LhsIndices;
+    static const config::OptionType<decltype(rhs_indices_)> RhsIndices;
+    static const config::OptionType<decltype(metric_)> Metric;
+    static const config::OptionType<decltype(algo_)> Algo;
+    static const config::OptionType<decltype(q_)> QGramLength;
 
 public:
     MetricVerifier();

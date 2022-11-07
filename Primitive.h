@@ -63,7 +63,10 @@ protected:
 
     void MakeOptionsAvailable(std::vector<std::string> const& option_names);
 
-    void AddPossibleOption(std::shared_ptr<config::IOption> option);
+    template<typename T>
+    void AddPossibleOption(config::Option<T> option) {
+        possible_options_[option.GetName()] = std::make_shared<config::Option<T>>(option);
+    }
 
     // Remove options that were added by an option that was unset.
     void ExcludeOptions(std::string const& parent_option);
