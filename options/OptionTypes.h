@@ -18,8 +18,8 @@ struct OptionType {
     OptionType(std::string name, std::string description, std::function<void(T &)> value_check = {})
     : OptionType(name, description, {}, value_check) {}
 
-    [[nodiscard]] Option<T> GetOption() const {
-        return Option<T>(name_, description_, value_check_, default_value_);
+    [[nodiscard]] Option<T> GetOption(T* value_ptr) const {
+        return Option<T>(name_, description_, value_ptr, value_check_, default_value_);
     }
 
     std::optional<T> const default_value_;

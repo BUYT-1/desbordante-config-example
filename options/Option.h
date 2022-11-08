@@ -15,9 +15,9 @@ namespace algos::config {
 template<typename T>
 struct Option : public IOption {
 public:
-    Option(std::string name, std::string description, std::function<void(T &)> value_check,
+    Option(std::string name, std::string description, T* value_ptr, std::function<void(T &)> value_check,
            std::optional<T> default_value) : name_(std::move(name)), description_(std::move(description)),
-           value_check_(std::move(value_check)), default_value_(std::move(default_value)) {}
+           value_ptr_(value_ptr), value_check_(std::move(value_check)), default_value_(std::move(default_value)) {}
 
     void SetDefault() override {
         if (!default_value_.has_value())
@@ -57,10 +57,8 @@ public:
         return is_set_;
     }
 
-    Option & SetSetter(T* val_ptr, std::function<void(T &)> instance_check = {}) {
+    Option & SetSetter(std::function<void(T &)> instance_check = {}) {
         instance_check_ = instance_check;
-        value_ptr_ = val_ptr;
-        assert(value_ptr_ != nullptr);
         return *this;
     }
 

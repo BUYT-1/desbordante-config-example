@@ -68,7 +68,7 @@ void MetricVerifier::SetExecuteOpts() {
 
 void MetricVerifier::AddPossibleOpts() {
     auto check_ind = [this](auto value) { CheckIndices(value); };
-    auto metric_post_set = [this](decltype(Metric.GetOption()) const& option, auto value) {
+    auto metric_post_set = [this](auto const& option, auto value) {
         std::string const &metricAlgorithm = opt_strings::kMetricAlgorithm;
         std::string const &qGramLength = opt_strings::kQGramLength;
         if (value == "levenshtein") {
@@ -93,16 +93,16 @@ void MetricVerifier::AddPossibleOpts() {
         }
     };
 
-    AddPossibleOption(config::EqualNulls.GetOption().SetSetter(&is_null_equal_null_));
-    AddPossibleOption(config::NullDistInf.GetOption().SetSetter(&dist_to_null_infinity_));
-    AddPossibleOption(config::Parameter.GetOption().SetSetter(&parameter_));
-    AddPossibleOption(LhsIndices.GetOption().SetSetter(&lhs_indices_, check_ind));
-    AddPossibleOption(RhsIndices.GetOption().SetSetter(&rhs_indices_, check_ind).SetPostSetFunc(
+    AddPossibleOption(config::EqualNulls.GetOption(&is_null_equal_null_));
+    AddPossibleOption(config::NullDistInf.GetOption(&dist_to_null_infinity_));
+    AddPossibleOption(config::Parameter.GetOption(&parameter_));
+    AddPossibleOption(LhsIndices.GetOption(&lhs_indices_).SetSetter(check_ind));
+    AddPossibleOption(RhsIndices.GetOption(&rhs_indices_).SetSetter(check_ind).SetPostSetFunc(
             [this](auto opt, auto) { MakeOptionsAvailable(opt.GetName(), {opt_strings::kMetric}); }));
 
-    AddPossibleOption(Metric.GetOption().SetSetter(&metric_).SetPostSetFunc(metric_post_set));
-    AddPossibleOption(Algo.GetOption().SetSetter(&algo_, algo_check));
-    AddPossibleOption(QGramLength.GetOption().SetSetter(&q_));
+    AddPossibleOption(Metric.GetOption(&metric_).SetPostSetFunc(metric_post_set));
+    AddPossibleOption(Algo.GetOption(&algo_).SetSetter(algo_check));
+    AddPossibleOption(QGramLength.GetOption(&q_));
 }
 
 }
