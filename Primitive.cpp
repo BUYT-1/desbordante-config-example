@@ -69,4 +69,8 @@ void Primitive::ClearOptions() noexcept {
     option_map_.clear();
 }
 
+std::function<void(const std::string &, const std::vector<std::string> &)> Primitive::GetOptAvailFunc() {
+    return [this](auto parent_opt, auto children) { MakeOptionsAvailable(parent_opt, children); };
+}
+
 }  // namespace algos

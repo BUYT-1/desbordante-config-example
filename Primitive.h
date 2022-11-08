@@ -21,6 +21,12 @@ private:
     std::unordered_map<std::string, std::vector<std::string>> opt_parents_{};
     std::unordered_map<std::string, std::shared_ptr<config::IOption>> option_map_{};
     std::unordered_map<std::string, std::shared_ptr<config::IOption>> possible_options_{};
+
+    void MakeOptionsAvailable(std::string const& parent_name, std::vector<std::string> const& option_names);
+
+    // Remove options that were added by an option that was unset.
+    void ExcludeOptions(std::string const& parent_option);
+
 protected:
     using StreamRef = model::IDatasetStream &;
 
@@ -59,11 +65,11 @@ public:
     void UnsetOption(std::string const& option_name) noexcept;
 
 protected:
+    std::function<void(std::string const&, std::vector<std::string> const&)> GetOptAvailFunc();
+
     virtual void FitInternal(StreamRef input_generator) = 0;
 
     virtual void MakeExecuteOptsAvailable() = 0;
-
-    void MakeOptionsAvailable(std::string const& parent_name, std::vector<std::string> const& option_names);
 
     void MakeOptionsAvailable(std::vector<std::string> const& option_names);
 
@@ -71,9 +77,6 @@ protected:
     void RegisterOption(config::Option<T> option) {
         possible_options_[option.GetName()] = std::make_shared<config::Option<T>>(option);
     }
-
-    // Remove options that were added by an option that was unset.
-    void ExcludeOptions(std::string const& parent_option);
 
     void ClearOptions() noexcept;
 };

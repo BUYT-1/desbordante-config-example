@@ -35,7 +35,15 @@ public:
         assert(value_ptr_ != nullptr);
         *value_ptr_ = value;
         is_set_ = true;
-        if (post_set_) post_set_(*this, value);
+        if (opt_add_func_) {
+            for (auto const& [cond, opts] : opt_cond_) {
+                assert(cond);
+                if (cond(value)) {
+                    opt_add_func_(info_.GetName(), opts);
+                    break;
+                }
+            }
+        }
     }
 
     void Unset() override {
@@ -63,9 +71,13 @@ public:
         return *this;
     }
 
-    Option & SetPostSetFunc(std::function<void(Option const&, T const &)> post_set) {
-        assert(post_set);
-        post_set_ = post_set;
+    Option & SetConditionalOpts(
+            std::function<void(std::string const&, std::vector<std::string> const&)> const& add_opts,
+            std::vector<std::pair<std::function<bool(T const& val)>, std::vector<std::string>>> opt_cond) {
+        assert(add_opts);
+        assert(!opt_cond.empty());
+        opt_cond_ = opt_cond;
+        opt_add_func_ = add_opts;
         return *this;
     }
 
@@ -94,7 +106,8 @@ private:
     std::function<void(T &)> value_check_{};
     std::function<void(T &)> instance_check_{};
     T * value_ptr_;
-    std::function<void(Option const&, T const &)> post_set_{};
+    std::vector<std::pair<std::function<bool(T const& val)>, std::vector<std::string>>> opt_cond_{};
+    std::function<void(std::string const&, std::vector<std::string> const&)> opt_add_func_{};
 };
 
 }

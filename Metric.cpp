@@ -72,15 +72,10 @@ void MetricVerifier::MakeExecuteOptsAvailable() {
 
 void MetricVerifier::RegisterOptions() {
     auto check_ind = [this](auto value) { CheckIndices(value); };
-    auto metric_post_set = [this](auto const& option, auto value) {
-        if (value == "levenshtein") {
-            MakeOptionsAvailable(option.GetName(), config::GetOptionNames(Algo));
-        } else if (value == "cosine") {
-            MakeOptionsAvailable(option.GetName(), config::GetOptionNames(Algo, QGramLength));
-        } else /*if (value == "euclidean") */ {
-            if (rhs_indices_.size() != 1)
-                MakeOptionsAvailable(option.GetName(), config::GetOptionNames(Algo));
-        }
+    auto true_func = [](...) { return true; };
+    auto need_algo_and_q = [](auto value) { return value == "cosine"; };
+    auto need_algo_only = [this](auto value) {
+        return value == "levenshtein" || value == "euclidean" && rhs_indices_.size() == 1;
     };
 
     auto algo_check = [this](auto value) {
@@ -99,10 +94,14 @@ void MetricVerifier::RegisterOptions() {
     RegisterOption(config::NullDistInf.GetOption(&dist_to_null_infinity_));
     RegisterOption(config::Parameter.GetOption(&parameter_));
     RegisterOption(LhsIndices.GetOption(&lhs_indices_).SetSetter(check_ind));
-    RegisterOption(RhsIndices.GetOption(&rhs_indices_).SetSetter(check_ind).SetPostSetFunc(
-            [this](auto opt, auto) { MakeOptionsAvailable(opt.GetName(), config::GetOptionNames(Metric)); }));
+    RegisterOption(RhsIndices.GetOption(&rhs_indices_).SetSetter(check_ind).SetConditionalOpts(GetOptAvailFunc(), {
+        {true_func, config::GetOptionNames(Metric)}
+    }));
 
-    RegisterOption(Metric.GetOption(&metric_).SetPostSetFunc(metric_post_set));
+    RegisterOption(Metric.GetOption(&metric_).SetConditionalOpts(GetOptAvailFunc(), {
+        {need_algo_and_q, config::GetOptionNames(Algo, QGramLength)},
+        {need_algo_only, config::GetOptionNames(Metric)}
+    }));
     RegisterOption(Algo.GetOption(&algo_).SetSetter(algo_check));
     RegisterOption(QGramLength.GetOption(&q_));
 }
