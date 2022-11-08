@@ -68,17 +68,10 @@ void MetricVerifier::SetExecuteOpts() {
 
 void MetricVerifier::AddPossibleOpts() {
     auto check_ind = [this](auto value) { CheckIndices(value); };
-    auto metric_post_set = [this](auto const& option, auto value) {
-        std::string const &metricAlgorithm = opt_strings::kMetricAlgorithm;
-        std::string const &qGramLength = opt_strings::kQGramLength;
-        if (value == "levenshtein") {
-            MakeOptionsAvailable(option.GetName(), {metricAlgorithm});
-        } else if (value == "cosine") {
-            MakeOptionsAvailable(option.GetName(), {metricAlgorithm, qGramLength});
-        } else /*if (value == "euclidean") */ {
-            if (rhs_indices_.size() != 1)
-                MakeOptionsAvailable(option.GetName(), {metricAlgorithm});
-        }
+    auto true_func = [](...) { return true; };
+    auto need_algo_and_q = [](auto value) { return value == "cosine"; };
+    auto need_algo_only = [this](auto value) {
+        return value == "levenshtein" || value == "euclidean" && rhs_indices_.size() == 1;
     };
 
     auto algo_check = [this](auto value) {
@@ -97,10 +90,14 @@ void MetricVerifier::AddPossibleOpts() {
     AddPossibleOption(config::NullDistInf.GetOption(&dist_to_null_infinity_));
     AddPossibleOption(config::Parameter.GetOption(&parameter_));
     AddPossibleOption(LhsIndices.GetOption(&lhs_indices_).SetSetter(check_ind));
-    AddPossibleOption(RhsIndices.GetOption(&rhs_indices_).SetSetter(check_ind).SetPostSetFunc(
-            [this](auto opt, auto) { MakeOptionsAvailable(opt.GetName(), {opt_strings::kMetric}); }));
+    AddPossibleOption(RhsIndices.GetOption(&rhs_indices_).SetSetter(check_ind).SetConditionalOpts(GetOptAvailFunc(), {
+        {true_func, {opt_strings::kMetric}}
+    }));
 
-    AddPossibleOption(Metric.GetOption(&metric_).SetPostSetFunc(metric_post_set));
+    AddPossibleOption(Metric.GetOption(&metric_).SetConditionalOpts(GetOptAvailFunc(), {
+        {need_algo_and_q, {opt_strings::kMetricAlgorithm, opt_strings::kQGramLength}},
+        {need_algo_only, {opt_strings::kMetricAlgorithm}}
+    }));
     AddPossibleOption(Algo.GetOption(&algo_).SetSetter(algo_check));
     AddPossibleOption(QGramLength.GetOption(&q_));
 }
