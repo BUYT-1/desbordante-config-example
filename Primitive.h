@@ -7,8 +7,9 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include "IDatasetStream.h"
 #include "CSVParser.h"
+#include "IDatasetStream.h"
+#include "OptionTypes.h"
 #include "Option.h"
 
 namespace algos {

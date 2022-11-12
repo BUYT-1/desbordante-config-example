@@ -27,7 +27,7 @@ private:
     void CheckIndices(std::vector<unsigned int> const& value) const;
     void MakeExecuteOptsAvailable() override;
     void FitInternal(StreamRef input_generator) override;
-    void AddPossibleOpts();
+    void RegisterOptions();
 
     static const config::OptionType<decltype(lhs_indices_)> LhsIndices;
     static const config::OptionType<decltype(rhs_indices_)> RhsIndices;

@@ -47,11 +47,11 @@ public:
     }
 
     [[nodiscard]] std::string GetName() const override {
-        return std::string(info_.name_);
+        return info_.GetName();
     }
 
     [[nodiscard]] std::string GetDescription() const {
-        return std::string(info_.description_);
+        return info_.GetDescription();
     }
 
     [[nodiscard]] bool IsSet() const override {

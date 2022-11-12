@@ -23,6 +23,15 @@ struct OptionType {
         return Option<T>(info_, value_ptr, value_check_, default_value_);
     }
 
+    [[nodiscard]] std::string GetName() const {
+        return info_.GetName();
+    }
+
+    [[nodiscard]] std::string GetDescription() const {
+        return info_.GetDescription();
+    }
+
+private:
     std::optional<T> const default_value_;
     OptionInfo const info_;
     std::function<void(T&)> const value_check_;

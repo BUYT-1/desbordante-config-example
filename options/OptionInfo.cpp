@@ -38,4 +38,14 @@ OptionInfo const& GetOptionInfo(std::string_view const group_name, std::string_v
     assert(0);
 }
 
+std::string OptionInfo::GetName() const {
+    return std::string(name_);
+}
+
+std::string OptionInfo::GetDescription() const {
+    return std::string(description_);
+}
+
+OptionInfo::OptionInfo(std::string_view name, std::string_view description) : name_(name), description_(description) {}
+
 }
