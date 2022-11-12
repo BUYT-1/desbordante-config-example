@@ -16,33 +16,29 @@ void TransformIndices(std::vector<unsigned int>& value) {
     value.erase(std::unique(value.begin(), value.end()), value.end());
 }
 
-static inline config::OptionInfo GetInfo(std::string_view const& name) {
-    return config::GetOptionInfo(config::option_group_names::mfd, name);
-}
-
 decltype(MetricVerifier::LhsIndices) MetricVerifier::LhsIndices{
-    GetInfo(opt_strings::kLhsIndices), TransformIndices
+        config::GetOptionInfoByName(opt_names::kLhsIndices), TransformIndices
 };
 
 decltype(MetricVerifier::RhsIndices) MetricVerifier::RhsIndices{
-    GetInfo(opt_strings::kRhsIndices), TransformIndices
+        config::GetOptionInfoByName(opt_names::kRhsIndices), TransformIndices
 };
 
 decltype(MetricVerifier::Metric) MetricVerifier::Metric{
-    GetInfo(opt_strings::kMetric), [](auto value) {
+        config::GetOptionInfoByName(opt_names::kMetric), [](auto value) {
         if (!(value == "euclidean" || value == "levenshtein" || value == "cosine"))
             throw std::invalid_argument("Unsupported metric");
     }
 };
 
 decltype(MetricVerifier::Algo) MetricVerifier::Algo{
-    GetInfo(opt_strings::kMetricAlgorithm), "brute", [](auto value) {
+        config::GetOptionInfoByName(opt_names::kMetricAlgorithm), "brute", [](auto value) {
         if (!(value == "brute" || value == "approx" || value == "calipers"))
             throw std::invalid_argument("Unsupported metric");
     }
 };
 
-decltype(MetricVerifier::QGramLength) MetricVerifier::QGramLength{GetInfo(opt_strings::kQGramLength), 2};
+decltype(MetricVerifier::QGramLength) MetricVerifier::QGramLength{config::GetOptionInfoByName(opt_names::kQGramLength), 2};
 
 MetricVerifier::MetricVerifier() : Primitive() {
     RegisterOptions();
@@ -93,16 +89,17 @@ void MetricVerifier::RegisterOptions() {
     RegisterOption(config::EqualNulls.GetOption(&is_null_equal_null_));
     RegisterOption(config::NullDistInf.GetOption(&dist_to_null_infinity_));
     RegisterOption(config::Parameter.GetOption(&parameter_));
-    RegisterOption(LhsIndices.GetOption(&lhs_indices_).SetSetter(check_ind));
-    RegisterOption(RhsIndices.GetOption(&rhs_indices_).SetSetter(check_ind).SetConditionalOpts(GetOptAvailFunc(), {
-        {true_func, config::GetOptionNames(Metric)}
+    RegisterOption(LhsIndices.GetOption(&lhs_indices_).SetInstanceCheck(check_ind));
+    RegisterOption(
+            RhsIndices.GetOption(&rhs_indices_).SetInstanceCheck(check_ind).SetConditionalOpts(GetOptAvailFunc(), {
+                {true_func, config::GetOptionNames(Metric)}
     }));
 
     RegisterOption(Metric.GetOption(&metric_).SetConditionalOpts(GetOptAvailFunc(), {
         {need_algo_and_q, config::GetOptionNames(Algo, QGramLength)},
         {need_algo_only, config::GetOptionNames(Metric)}
     }));
-    RegisterOption(Algo.GetOption(&algo_).SetSetter(algo_check));
+    RegisterOption(Algo.GetOption(&algo_).SetInstanceCheck(algo_check));
     RegisterOption(QGramLength.GetOption(&q_));
 }
 

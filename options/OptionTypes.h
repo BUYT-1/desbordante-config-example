@@ -11,12 +11,12 @@ using ParameterType = long double;
 
 template <typename T>
 struct OptionType {
-    explicit OptionType(OptionInfo info, std::optional<T> default_value = {},
+    explicit OptionType(OptionInfo const info, std::optional<T> default_value = {},
                std::function<void(T &)> value_check = {}) : info_(info),
                default_value_(std::move(default_value)), value_check_(std::move(value_check))
     {}
 
-    explicit OptionType(OptionInfo info, std::function<void(T &)> value_check = {})
+    explicit OptionType(OptionInfo const info, std::function<void(T &)> value_check = {})
     : OptionType(info, {}, value_check) {}
 
     [[nodiscard]] Option<T> GetOption(T* value_ptr) const {
@@ -52,12 +52,9 @@ std::vector<std::string> GetOptionNames(OptionType<T> opt, Options... options) {
     return names;
 }
 
-const OptionType<EqNullsType> EqualNulls{
-    GetOptionInfo(option_group_names::common, opt_strings::kEqualNulls), true};
-const OptionType<NullDIstInfType> NullDistInf{
-    GetOptionInfo(option_group_names::common, opt_strings::kDistToNullIsInfinity), false};
-const OptionType<ParameterType> Parameter{
-    GetOptionInfo(option_group_names::common, opt_strings::kParameter), 0, [](auto value) {
+const OptionType<EqNullsType> EqualNulls{GetOptionInfoByName(opt_names::kEqualNulls), true};
+const OptionType<NullDIstInfType> NullDistInf{GetOptionInfoByName(opt_names::kDistToNullIsInfinity), false};
+const OptionType<ParameterType> Parameter{GetOptionInfoByName(opt_names::kParameter), 0, [](auto value) {
     if (!(value >= 0 && value <= 1)) throw std::invalid_argument("Out of range");
 }};
 

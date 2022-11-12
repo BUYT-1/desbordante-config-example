@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace opt_strings {
+namespace opt_names {
 const std::string_view kHelp = "help";
 const std::string_view kTask = "task";
 const std::string_view kAlgorithm = "algorithm";

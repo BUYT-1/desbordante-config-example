@@ -4,7 +4,7 @@
 #include <utility>
 #include "Primitive.h"
 
-#include "ProgramOptionStrings.h"
+#include "OptionNames.h"
 #include "Option.h"
 #include "Descriptions.h"
 #include "OptionTypes.h"
