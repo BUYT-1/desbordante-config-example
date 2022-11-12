@@ -39,7 +39,7 @@ private:
 
 template <typename T, typename... Options>
 void AddNames(std::vector<std::string>& names, OptionType<T> opt, Options... options) {
-    names.template emplace_back(opt.GetName());
+    names.emplace_back(opt.GetName());
     if constexpr (sizeof...(options) != 0) {
         AddNames(names, options...);
     }
