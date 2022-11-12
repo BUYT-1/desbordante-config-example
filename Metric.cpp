@@ -46,7 +46,7 @@ decltype(MetricVerifier::QGramLength) MetricVerifier::QGramLength{GetInfo(opt_st
 
 MetricVerifier::MetricVerifier() : Primitive() {
     RegisterOptions();
-    MakeOptionsAvailable({config::EqualNulls.GetName()});
+    MakeOptionsAvailable(config::GetOptionNames(config::EqualNulls));
 }
 
 void MetricVerifier::FitInternal(StreamRef input_generator) {
@@ -67,22 +67,19 @@ void MetricVerifier::CheckIndices(const std::vector<unsigned int>& value) const 
 
 void MetricVerifier::MakeExecuteOptsAvailable() {
     ClearOptions();
-    MakeOptionsAvailable({config::Parameter.GetName(), config::NullDistInf.GetName(),
-                          LhsIndices.GetName(), RhsIndices.GetName()});
+    MakeOptionsAvailable(config::GetOptionNames(config::Parameter, config::NullDistInf, LhsIndices, RhsIndices));
 }
 
 void MetricVerifier::RegisterOptions() {
     auto check_ind = [this](auto value) { CheckIndices(value); };
     auto metric_post_set = [this](auto const& option, auto value) {
-        auto const &metricAlgorithm = Algo.GetName();
-        auto const &qGramLength = QGramLength.GetName();
         if (value == "levenshtein") {
-            MakeOptionsAvailable(option.GetName(), {metricAlgorithm});
+            MakeOptionsAvailable(option.GetName(), config::GetOptionNames(Algo));
         } else if (value == "cosine") {
-            MakeOptionsAvailable(option.GetName(), {metricAlgorithm, qGramLength});
+            MakeOptionsAvailable(option.GetName(), config::GetOptionNames(Algo, QGramLength));
         } else /*if (value == "euclidean") */ {
             if (rhs_indices_.size() != 1)
-                MakeOptionsAvailable(option.GetName(), {metricAlgorithm});
+                MakeOptionsAvailable(option.GetName(), config::GetOptionNames(Algo));
         }
     };
 
@@ -103,7 +100,7 @@ void MetricVerifier::RegisterOptions() {
     RegisterOption(config::Parameter.GetOption(&parameter_));
     RegisterOption(LhsIndices.GetOption(&lhs_indices_).SetSetter(check_ind));
     RegisterOption(RhsIndices.GetOption(&rhs_indices_).SetSetter(check_ind).SetPostSetFunc(
-            [this](auto opt, auto) { MakeOptionsAvailable(opt.GetName(), {Metric.GetName()}); }));
+            [this](auto opt, auto) { MakeOptionsAvailable(opt.GetName(), config::GetOptionNames(Metric)); }));
 
     RegisterOption(Metric.GetOption(&metric_).SetPostSetFunc(metric_post_set));
     RegisterOption(Algo.GetOption(&algo_).SetSetter(algo_check));
