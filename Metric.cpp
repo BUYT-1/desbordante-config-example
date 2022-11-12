@@ -1,7 +1,7 @@
 #include <vector>
 #include <iostream>
 
-#include "OptionGroups.h"
+#include "OptionCategories.h"
 #include "OptionInfo.h"
 #include "Option.h"
 #include "Metric.h"

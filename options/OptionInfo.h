@@ -2,7 +2,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "OptionGroups.h"
+#include "OptionCategories.h"
 #include "OptionNames.h"
 #include "Descriptions.h"
 
