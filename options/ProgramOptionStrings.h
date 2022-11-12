@@ -2,30 +2,30 @@
 #include <string>
 
 namespace opt_strings {
-const std::string kHelp = "help";
-const std::string kTask = "task";
-const std::string kAlgorithm = "algorithm";
-const std::string kData = "data";
-const std::string kSeparatorConfig = "separator";
-const std::string kHasHeader = "has_header";
-const std::string kEqualNulls = "is_null_equal_null";
-const std::string kThreads = "threads";
-const std::string kError = "error";
-const std::string kMaximumLhs = "max_lhs";
-const std::string kSeed = "seed";
-const std::string kMinimumSupport = "minsup";
-const std::string kMinimumConfidence = "minconf";
-const std::string kInputFormat = "input_format";
-const std::string kTIdColumnIndex = "tid_column_index";
-const std::string kItemColumnIndex = "item_column_index";
-const std::string kFirstColumnTId = "has_tid";
-const std::string kMetric = "metric";
-const std::string kLhsIndices = "lhs_indices";
-const std::string kRhsIndices = "rhs_indices";
-const std::string kParameter = "parameter";
-const std::string kDistToNullIsInfinity = "dist_to_null_infinity";
-const std::string kQGramLength = "q";
-const std::string kMetricAlgorithm = "metric_algorithm";
-const std::string kRadius = "radius";
-const std::string kRatio = "ratio";
+const std::string_view kHelp = "help";
+const std::string_view kTask = "task";
+const std::string_view kAlgorithm = "algorithm";
+const std::string_view kData = "data";
+const std::string_view kSeparatorConfig = "separator";
+const std::string_view kHasHeader = "has_header";
+const std::string_view kEqualNulls = "is_null_equal_null";
+const std::string_view kThreads = "threads";
+const std::string_view kError = "error";
+const std::string_view kMaximumLhs = "max_lhs";
+const std::string_view kSeed = "seed";
+const std::string_view kMinimumSupport = "minsup";
+const std::string_view kMinimumConfidence = "minconf";
+const std::string_view kInputFormat = "input_format";
+const std::string_view kTIdColumnIndex = "tid_column_index";
+const std::string_view kItemColumnIndex = "item_column_index";
+const std::string_view kFirstColumnTId = "has_tid";
+const std::string_view kMetric = "metric";
+const std::string_view kLhsIndices = "lhs_indices";
+const std::string_view kRhsIndices = "rhs_indices";
+const std::string_view kParameter = "parameter";
+const std::string_view kDistToNullIsInfinity = "dist_to_null_infinity";
+const std::string_view kQGramLength = "q";
+const std::string_view kMetricAlgorithm = "metric_algorithm";
+const std::string_view kRadius = "radius";
+const std::string_view kRatio = "ratio";
 }  // namespace program_option_strings

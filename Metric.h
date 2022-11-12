@@ -25,7 +25,7 @@ private:
     bool processing_completed_ = false;
 
     void CheckIndices(std::vector<unsigned int> const& value) const;
-    void SetExecuteOpts() override;
+    void MakeExecuteOptsAvailable() override;
     void FitInternal(StreamRef input_generator) override;
     void AddPossibleOpts();
 

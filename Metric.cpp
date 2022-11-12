@@ -1,6 +1,8 @@
 #include <vector>
 #include <iostream>
 
+#include "OptionGroups.h"
+#include "OptionInfo.h"
 #include "Option.h"
 #include "Metric.h"
 
@@ -14,34 +16,38 @@ void TransformIndices(std::vector<unsigned int>& value) {
     value.erase(std::unique(value.begin(), value.end()), value.end());
 }
 
+config::OptionInfo GetInfo(std::string_view const& name) {
+    return config::GetOptionInfo(config::option_group_names::mfd, name);
+}
+
 decltype(MetricVerifier::LhsIndices) MetricVerifier::LhsIndices{
-    opt_strings::kLhsIndices, config::descriptions::kDLhsIndices, TransformIndices
+    GetInfo(opt_strings::kLhsIndices), TransformIndices
 };
 
 decltype(MetricVerifier::RhsIndices) MetricVerifier::RhsIndices{
-    opt_strings::kRhsIndices, config::descriptions::kDRhsIndices, TransformIndices
+    GetInfo(opt_strings::kRhsIndices), TransformIndices
 };
 
 decltype(MetricVerifier::Metric) MetricVerifier::Metric{
-    opt_strings::kMetric, config::descriptions::kDMetric, [](auto value) {
+    GetInfo(opt_strings::kMetric),
+    [](auto value) {
         if (!(value == "euclidean" || value == "levenshtein" || value == "cosine"))
             throw std::invalid_argument("Unsupported metric");
     }
 };
 
 decltype(MetricVerifier::Algo) MetricVerifier::Algo{
-    opt_strings::kMetricAlgorithm, config::descriptions::kDMetricAlgorithm, "brute", [](auto value) {
+    GetInfo(opt_strings::kMetricAlgorithm), "brute", [](auto value) {
         if (!(value == "brute" || value == "approx" || value == "calipers"))
             throw std::invalid_argument("Unsupported metric");
     }
 };
 
-decltype(MetricVerifier::QGramLength) MetricVerifier::QGramLength{opt_strings::kQGramLength,
-                                                                  config::descriptions::kDQGramLength, 2};
+decltype(MetricVerifier::QGramLength) MetricVerifier::QGramLength{GetInfo(opt_strings::kQGramLength), 2};
 
 MetricVerifier::MetricVerifier() : Primitive() {
     AddPossibleOpts();
-    MakeOptionsAvailable({opt_strings::kEqualNulls});
+    MakeOptionsAvailable({std::string(opt_strings::kEqualNulls)});
 }
 
 void MetricVerifier::FitInternal(StreamRef input_generator) {
@@ -60,17 +66,17 @@ void MetricVerifier::CheckIndices(const std::vector<unsigned int>& value) const 
     // OOB check
 }
 
-void MetricVerifier::SetExecuteOpts() {
+void MetricVerifier::MakeExecuteOptsAvailable() {
     ClearOptions();
-    MakeOptionsAvailable({opt_strings::kParameter, opt_strings::kDistToNullIsInfinity, opt_strings::kLhsIndices,
-                          opt_strings::kRhsIndices});
+    MakeOptionsAvailable({std::string(opt_strings::kParameter), std::string(opt_strings::kDistToNullIsInfinity),
+                          std::string(opt_strings::kLhsIndices), std::string(opt_strings::kRhsIndices)});
 }
 
 void MetricVerifier::AddPossibleOpts() {
     auto check_ind = [this](auto value) { CheckIndices(value); };
     auto metric_post_set = [this](auto const& option, auto value) {
-        std::string const &metricAlgorithm = opt_strings::kMetricAlgorithm;
-        std::string const &qGramLength = opt_strings::kQGramLength;
+        auto const &metricAlgorithm = std::string(opt_strings::kMetricAlgorithm);
+        auto const &qGramLength = std::string(opt_strings::kQGramLength);
         if (value == "levenshtein") {
             MakeOptionsAvailable(option.GetName(), {metricAlgorithm});
         } else if (value == "cosine") {
@@ -93,16 +99,16 @@ void MetricVerifier::AddPossibleOpts() {
         }
     };
 
-    AddPossibleOption(config::EqualNulls.GetOption(&is_null_equal_null_));
-    AddPossibleOption(config::NullDistInf.GetOption(&dist_to_null_infinity_));
-    AddPossibleOption(config::Parameter.GetOption(&parameter_));
-    AddPossibleOption(LhsIndices.GetOption(&lhs_indices_).SetSetter(check_ind));
-    AddPossibleOption(RhsIndices.GetOption(&rhs_indices_).SetSetter(check_ind).SetPostSetFunc(
-            [this](auto opt, auto) { MakeOptionsAvailable(opt.GetName(), {opt_strings::kMetric}); }));
+    RegisterOption(config::EqualNulls.GetOption(&is_null_equal_null_));
+    RegisterOption(config::NullDistInf.GetOption(&dist_to_null_infinity_));
+    RegisterOption(config::Parameter.GetOption(&parameter_));
+    RegisterOption(LhsIndices.GetOption(&lhs_indices_).SetSetter(check_ind));
+    RegisterOption(RhsIndices.GetOption(&rhs_indices_).SetSetter(check_ind).SetPostSetFunc(
+            [this](auto opt, auto) { MakeOptionsAvailable(opt.GetName(), {std::string(opt_strings::kMetric)}); }));
 
-    AddPossibleOption(Metric.GetOption(&metric_).SetPostSetFunc(metric_post_set));
-    AddPossibleOption(Algo.GetOption(&algo_).SetSetter(algo_check));
-    AddPossibleOption(QGramLength.GetOption(&q_));
+    RegisterOption(Metric.GetOption(&metric_).SetPostSetFunc(metric_post_set));
+    RegisterOption(Algo.GetOption(&algo_).SetSetter(algo_check));
+    RegisterOption(QGramLength.GetOption(&q_));
 }
 
 }

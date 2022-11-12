@@ -8,6 +8,7 @@
 #include <vector>
 #include <utility>
 
+#include "OptionInfo.h"
 #include "IOption.h"
 
 namespace algos::config {
@@ -15,9 +16,9 @@ namespace algos::config {
 template<typename T>
 struct Option : public IOption {
 public:
-    Option(std::string name, std::string description, T* value_ptr, std::function<void(T &)> value_check,
-           std::optional<T> default_value) : name_(std::move(name)), description_(std::move(description)),
-           value_ptr_(value_ptr), value_check_(std::move(value_check)), default_value_(std::move(default_value)) {}
+    Option(OptionInfo info, T* value_ptr, std::function<void(T &)> value_check,
+           std::optional<T> default_value) : info_(info), value_ptr_(value_ptr), value_check_(std::move(value_check)),
+           default_value_(std::move(default_value)) {}
 
     void SetDefault() override {
         if (!default_value_.has_value())
@@ -45,12 +46,12 @@ public:
         Set(std::any_cast<T>(value));
     }
 
-    [[nodiscard]] std::string const& GetName() const override {
-        return name_;
+    [[nodiscard]] std::string GetName() const override {
+        return std::string(info_.name_);
     }
 
-    [[nodiscard]] std::string const& GetDescription() const {
-        return description_;
+    [[nodiscard]] std::string GetDescription() const {
+        return std::string(info_.description_);
     }
 
     [[nodiscard]] bool IsSet() const override {
@@ -82,18 +83,13 @@ public:
         }
     }*/
 
-    /*virtual void AddToProgramOptions(po::options_description po) {
-        po.add_options(name_, po::value<T>(), *Description);
-    }*/
-
-    /*virtual std::string GetJson() {
-        ...
+    /*std::string GetJson() {
+        return info_.json_;
     }*/
 
 private:
     bool is_set_ = false;
-    std::string description_;
-    std::string name_;
+    OptionInfo info_;
     std::optional<T> default_value_{};
     std::function<void(T &)> value_check_{};
     std::function<void(T &)> instance_check_{};

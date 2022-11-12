@@ -60,14 +60,14 @@ public:
 protected:
     virtual void FitInternal(StreamRef input_generator) = 0;
 
-    virtual void SetExecuteOpts() = 0;
+    virtual void MakeExecuteOptsAvailable() = 0;
 
     void MakeOptionsAvailable(std::string const& parent_name, std::vector<std::string> const& option_names);
 
     void MakeOptionsAvailable(std::vector<std::string> const& option_names);
 
     template<typename T>
-    void AddPossibleOption(config::Option<T> option) {
+    void RegisterOption(config::Option<T> option) {
         possible_options_[option.GetName()] = std::make_shared<config::Option<T>>(option);
     }
 
